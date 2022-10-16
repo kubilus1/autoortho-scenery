@@ -4,6 +4,10 @@ on: push
 
 jobs:
   build:
+    strategy:
+      matrix:
+        tileset: [z_aus_pac_0.zip, z_aus_pac_1.zip, z_aus_pac_2.zip, z_aus_pac_3.zip]
+
     env:
       DEBIAN_FRONTEND: noninteractive
       TZ: America/NewYork
@@ -19,15 +23,16 @@ jobs:
           sudo apt-get install -y python3 python3-pip python3-tk zip
           python3 -m pip install -r requirements.txt
           make --version
+      
+      - name: Test
+        run: make -n ${{ matrix.tileset }}
 
       - name: Build
-        run: make -j 4 z_aus_pac.zip 
-
-      - name: Test
-        run: ls -alhs z_aus_pac.z*
+        run: make -j 4 ${{ matrix.tileset }}
+        if: startsWith(github.ref, 'refs/tags/')
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: z_aus_pac.z*
+          files: ${{ matrix.tileset }}
