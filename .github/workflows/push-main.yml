@@ -9,6 +9,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install reqs
+        run: |
+          apt-get update
+          apt-get install -y python3 python3-pip
+          python3 -m pip install -r requirements.txt
+
       - name: Build
         run: make -j 4 z_aus_pac.zip 
 
