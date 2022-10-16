@@ -1,0 +1,197 @@
+diff --git a/Ortho4XP.cfg b/Ortho4XP.cfg
+index 3bd794c..606ad08 100644
+--- a/Ortho4XP.cfg
++++ b/Ortho4XP.cfg
+@@ -1,8 +1,8 @@
+ verbosity=1
+-cleaning_level=1
++cleaning_level=3
+ overpass_server_choice=DE
+-skip_downloads=False
+-skip_converts=False
++skip_downloads=True
++skip_converts=True
+ max_convert_slots=4
+ check_tms_response=True
+ http_timeout=10.0
+@@ -11,12 +11,15 @@ max_baddata_retries=5
+ ovl_exclude_pol=[0]
+ ovl_exclude_net=[]
+ custom_scenery_dir=
+-custom_overlay_src=
++custom_overlay_src=/home/mkubilus/.steam/ubuntu12_32/steamapps/content/app_2126105/depot_2126105/Global Scenery/X-Plane 12 Global Scenery
++apt_smoothing_pix=8
+ road_level=1
+ road_banking_limit=0.5
++lane_width=5.0
+ max_levelled_segs=100000
++water_simplification=0.0
+ min_area=0.001
+-max_area=200
++max_area=200.0
+ clean_bad_geometries=True
+ mesh_zl=19
+ curvature_tol=2.0
+@@ -27,7 +30,6 @@ coast_curv_ext=0.5
+ limit_tris=0
+ hmin=0.0
+ min_angle=10.0
+-apt_smoothing_pix=8
+ sea_smoothing_mode=zero
+ water_smoothing=10
+ iterate=0
+@@ -35,10 +37,11 @@ mask_zl=14
+ masks_width=100
+ masking_mode=sand
+ use_masks_for_inland=False
++imprint_masks_to_dds=False
+ masks_use_DEM_too=False
+ masks_custom_extent=
+-cover_airports_with_highres=False
+-cover_extent=1.0
++cover_airports_with_highres=True
++cover_extent=0.5
+ cover_zl=18
+ ratio_water=0.25
+ overlay_lod=25000.0
+@@ -47,4 +50,4 @@ add_low_res_sea_ovl=False
+ experimental_water=0
+ normal_map_strength=1.0
+ terrain_casts_shadows=True
+-use_decal_on_terrain=False
++use_decal_on_terrain=True
+diff --git a/Ortho4XP_v130.py b/Ortho4XP_v130.py
+index 58b10c9..84e7555 100755
+--- a/Ortho4XP_v130.py
++++ b/Ortho4XP_v130.py
+@@ -12,6 +12,7 @@ import O4_Mesh_Utils as MESH
+ import O4_Mask_Utils as MASK
+ import O4_Tile_Utils as TILE
+ import O4_GUI_Utils as GUI
++import O4_Overlay_Utils as OVLY
+ import O4_Config_Utils as CFG  # CFG imported last because it can modify other modules variables
+ 
+ 
+@@ -68,6 +69,7 @@ if __name__ == '__main__':
+             MESH.build_mesh(tile)
+             MASK.build_masks(tile)
+             TILE.build_tile(tile)
++            OVLY.build_overlay(lat, lon)
+             print("Bon vol!")
+         except:
+             print("Crash!")
+diff --git a/src/O4_GUI_Utils.py b/src/O4_GUI_Utils.py
+index a9de2da..c389a88 100755
+--- a/src/O4_GUI_Utils.py
++++ b/src/O4_GUI_Utils.py
+@@ -849,6 +849,12 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
+         self.canvas.bind("<Double-Button-1>",self.select_tile)
+         self.canvas.bind("<Shift-ButtonPress-1>",self.add_tile)
+         self.canvas.bind("<Control-ButtonPress-1>",self.toggle_to_custom)
++        
++        self.canvas.bind("<ButtonPress-1>", self.button_1_down)
++        self.canvas.bind("<B1-Motion>", self.button_1_move)
++        self.canvas.bind("<ButtonRelease-1>", self.button_1_up)
++        self.rect = None
++
+         self.canvas.focus_set()
+         self.draw_canvas(self.nx0,self.ny0)
+         self.active_lat=lat 
+@@ -1096,6 +1102,39 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
+             self.dico_tiles_todo.pop((lat,lon),None)
+         return
+ 
++
++    def button_1_down(self, event):
++        x=self.canvas.canvasx(event.x)
++        y=self.canvas.canvasy(event.y)
++        #self.rect = self.canvas.create_rectangle(x, y, 1, 1, fill="")
++        print(f"BUTTON DOWN: {x}, {y}")
++
++
++    def button_1_move(self, event):
++
++        x=self.canvas.canvasx(event.x)
++        y=self.canvas.canvasy(event.y)
++        (lat,lon)=[floor(t) for t in GEO.pix_to_wgs84(x,y,self.earthzl)]
++        if (lat,lon) not in self.dico_tiles_todo:
++            [x0,y0]=GEO.wgs84_to_pix(lat+1,lon,self.earthzl)
++            [x1,y1]=GEO.wgs84_to_pix(lat,lon+1,self.earthzl)
++            if not OsX:
++                self.dico_tiles_todo[(lat,lon)]=self.canvas.create_rectangle(x0,y0,x1,y1,fill='red',stipple='gray12') 
++            else:
++                self.dico_tiles_todo[(lat,lon)]=self.canvas.create_rectangle(x0+2,y0+2,x1-2,y1-2,outline='red',width=1)
++        return
++        #self.rect = self.canvas.create_rectangle(x, y, 1, 1, fill="")
++        print(f"MOUSE MOVE: {x}, {y}")
++
++    def button_1_up(self, event):
++        x=self.canvas.canvasx(event.x)
++        y=self.canvas.canvasy(event.y)
++        self.rect = None
++        print(f"BUTTON UP: {x}, {y}")
++
++    
++
++
+     def batch_build(self):
+         list_lat_lon=sorted(self.dico_tiles_todo.keys())
+         if not list_lat_lon: return
+diff --git a/src/O4_Imagery_Utils.py b/src/O4_Imagery_Utils.py
+index d58f367..1a61481 100755
+--- a/src/O4_Imagery_Utils.py
++++ b/src/O4_Imagery_Utils.py
+@@ -1419,7 +1419,13 @@ def convert_texture(tile,til_x_left,til_y_top,zoomlevel,provider_code,type='dds'
+         file_to_convert=os.path.join(file_dir,jpeg_file_name)
+     # eventually the dds conversion
+     if type=='dds':
+-        if not dxt5:
++        if providers_dict[provider_code].get('skip_img'):
++            with open(os.path.join(tile.build_dir,'textures',out_file_name), 'a'):
++                pass
++            #try: os.remove(os.path.join(UI.Ortho4XP_dir,'tmp',png_file_name))
++            try: os.remove(file_to_convert)
++            except: pass
++        elif not dxt5:
+             conv_cmd=[dds_convert_cmd,'-bc1','-fast',file_to_convert,os.path.join(tile.build_dir,'textures',out_file_name),devnull_rdir]
+         else:
+             conv_cmd=[dds_convert_cmd,'-bc3','-fast',file_to_convert,os.path.join(tile.build_dir,'textures',out_file_name),devnull_rdir]
+@@ -1440,21 +1446,23 @@ def convert_texture(tile,til_x_left,til_y_top,zoomlevel,provider_code,type='dds'
+                 return
+             conv_cmd=[gdalwarp_cmd,'-of','Gtiff','-co','COMPRESS=JPEG','-s_srs','epsg:3857','-t_srs','epsg:4326','-ts','4096','4096','-rb',tmp_tif_file_name,os.path.join(FNAMES.Geotiff_dir,out_file_name)] 
+     tentative=0
+-    while True:
+-        if not subprocess.call(conv_cmd,stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT):
+-            break
+-        tentative+=1
+-        if tentative==10:
+-            UI.lvprint(1,"ERROR: Could not convert texture",os.path.join(tile.build_dir,'textures',out_file_name),"(10 tries)")
+-            break
+-        UI.lvprint(1,"WARNING: Could not convert texture",os.path.join(tile.build_dir,'textures',out_file_name))
+-        time.sleep(1)
+-    if erase_tmp_png:
+-        try: os.remove(os.path.join(UI.Ortho4XP_dir,'tmp',png_file_name))
+-        except: pass
+-    if erase_tmp_tif:
+-        try: os.remove(os.path.join(UI.Ortho4XP_dir,'tmp',png_file_name))
+-        except: pass
++    try:
++        while True and not providers_dict[provider_code].get('skip_img'):
++            if not subprocess.call(conv_cmd,stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT):
++                break
++            tentative+=1
++            if tentative==10:
++                UI.lvprint(1,"ERROR: Could not convert texture",os.path.join(tile.build_dir,'textures',out_file_name),"(10 tries)")
++                break
++            UI.lvprint(1,"WARNING: Could not convert texture",os.path.join(tile.build_dir,'textures',out_file_name))
++            time.sleep(1)
++    finally:
++        if erase_tmp_png:
++            try: os.remove(os.path.join(UI.Ortho4XP_dir,'tmp',png_file_name))
++            except: pass
++        if erase_tmp_tif:
++            try: os.remove(os.path.join(UI.Ortho4XP_dir,'tmp',png_file_name))
++            except: pass
+     return 
+ ###############################################################################################################################
+ 

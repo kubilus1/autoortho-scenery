@@ -1,0 +1,22 @@
+name: Main
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: make -j 4 z_aus_pac.zip 
+
+      - name: Test
+        run: ls -alhs z_aus_pac.z*
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: z_aus_pac.z*
