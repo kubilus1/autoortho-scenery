@@ -4,7 +4,7 @@ on: push
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -17,7 +17,7 @@ jobs:
           make --version
 
       - name: Build
-        run: make z_aus_pac.zip 
+        run: make -j 4 z_aus_pac.zip 
 
       - name: Test
         run: ls -alhs z_aus_pac.z*

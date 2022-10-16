@@ -15,7 +15,6 @@ Ortho4XP/Tiles/zOrtho4XP_%: Ortho4XP
 	@echo "Make tile $@" 
 	set -e;\
 	export COORDS=$$(echo $@ | sed -e 's/.*_\([-+][0-9]\+\)\([-+][0-9]\+\)/\1 \2/g');\
- 	echo "python3 Ortho4XP_v130.py $$COORDS BI 16";\
  	cd $< && python3 Ortho4XP_v130.py $$COORDS BI 16
 	
 
