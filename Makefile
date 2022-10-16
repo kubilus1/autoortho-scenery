@@ -56,7 +56,7 @@ z_aus_pac_2: $(AUS_PAC_TILES_2)
 z_aus_pac_3: $(AUS_PAC_TILES_3)
 
 z_%.zip: z_%
-	mkdir -p $@
+	mkdir -p $<
 	cp -r Ortho4XP/Tiles/zOrtho4XP_*/'Earth nav data' $</.
 	cp -r Ortho4XP/Tiles/zOrtho4XP_*/terrain $</.
 	cp -r Ortho4XP/Tiles/zOrtho4XP_*/textures $</.
