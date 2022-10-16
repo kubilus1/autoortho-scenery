@@ -13,7 +13,7 @@ ortho4xp.diff:
 Ortho4XP:
 	git clone --depth=1 https://github.com/oscarpilote/Ortho4XP.git
 	cd $@ && patch -p1 -u < ../ortho4xp.diff
-	cp extract_overlays.py $@/.
+	cp extract_overlay.py $@/.
 
 
 #
