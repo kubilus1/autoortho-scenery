@@ -5,4 +5,3 @@ rtree
 pillow
 requests
 pyproj
-tk

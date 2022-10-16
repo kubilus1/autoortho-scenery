@@ -3,6 +3,9 @@ name: Main
 on: push
 
 jobs:
+  env:
+    DEBIAN_FRONTEND=noninteractive
+    TZ=America/NewYork
   build:
     runs-on: ubuntu-22.04
     steps:
@@ -12,7 +15,7 @@ jobs:
       - name: Install reqs
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3 python3-pip
+          sudo apt-get install -y python3 python3-pip python3-tk
           python3 -m pip install -r requirements.txt
           make --version
 
