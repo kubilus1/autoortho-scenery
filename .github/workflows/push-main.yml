@@ -4,8 +4,9 @@ on: push
 
 jobs:
   env:
-    DEBIAN_FRONTEND=noninteractive
-    TZ=America/NewYork
+    DEBIAN_FRONTEND: noninteractive
+    TZ: America/NewYork
+
   build:
     runs-on: ubuntu-22.04
     steps:
