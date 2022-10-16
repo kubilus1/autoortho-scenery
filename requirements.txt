@@ -1,0 +1,7 @@
+cython
+numpy
+shapely
+rtree
+pillow
+requests
+pyproj
