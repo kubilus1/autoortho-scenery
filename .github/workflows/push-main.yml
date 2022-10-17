@@ -31,8 +31,10 @@ jobs:
         uses: pat-s/always-upload-cache@v3.0.1
         with:
           path: ./Ortho4XP
-          key: ortho4xp-${{ matrix.tileset }}
-      
+          key: ortho4xp-${{ matrix.tileset }}-${{ github.run_id }}
+          restore-keys: |
+            ortho4xp-${{ mastrix.tileset }} 
+
       - name: Test
         run: make -n ${{ matrix.tileset }}
 
