@@ -33,7 +33,7 @@ jobs:
           path: ./Ortho4XP
           key: ortho4xp-${{ matrix.tileset }}-${{ github.run_id }}
           restore-keys: |
-            ortho4xp-${{ mastrix.tileset }} 
+            ortho4xp-${{ matrix.tileset }} 
 
       - name: Test
         run: make -n ${{ matrix.tileset }}
