@@ -8,7 +8,7 @@ jobs:
   build:
     strategy:
       matrix:
-        tileset: [z_aus_pac_0.zip, z_aus_pac_1.zip, z_aus_pac_2.zip, z_aus_pac_3.zip]
+        tileset: [z_aus_pac_00.zip, z_aus_pac_01.zip, z_aus_pac_02.zip, z_aus_pac_03.zip, z_aus_pac_04.zip, z_aus_pac_05.zip, z_aus_pac_06.zip]
 
     env:
       DEBIAN_FRONTEND: noninteractive
@@ -42,7 +42,9 @@ jobs:
         run: make Ortho4XP
 
       - name: Build
-        run: make -j 4 ${{ matrix.tileset }}
+        run: |
+          make aus_pacific_tile_list_chunks
+          make -j 2 ${{ matrix.tileset }}
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Release
