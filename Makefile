@@ -4,8 +4,10 @@ NA_OVERLAYS=$(addprefix Ortho4XP/yOrtho4XP_Overlays/*/*/, $(shell cat na_tile_li
 AUS_PACS:=$(addprefix z_aus_pac_, $(shell ls aus_pacific_tile_list.* | awk -F. '{ print $$2 }') ) 
 NAS:=$(addprefix z_na_, $(shell ls na_tile_list.* | awk -F. '{ print $$2 }') ) 
 
-ZIPS=$(addsuffix .zip, $(AUS_PACS))
-ZIPS+=$(addsuffix .zip, $(NAS))
+AUS_PAC_ZIPS=$(addsuffix .zip, $(AUS_PACS))
+NA_ZIPS=$(addsuffix .zip, $(NAS))
+ZIPS=$(AUS_PAC_ZIPS) $(NA_ZIPS)
+
 
 # Get the tiles listed in each list file
 .SECONDEXPANSION:
@@ -24,6 +26,9 @@ y_na: $(NA_OVERLAYS)
 z_na_%: na_tile_list.% $${NA_TILES}
 	echo "Going to do some $@"
 
+
+allzips: $(AUS_PAC_ZIPS) $(NA_ZIPS)
+	
 #
 # Ortho4XP setup
 #
