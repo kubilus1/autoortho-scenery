@@ -54,14 +54,16 @@ jobs:
             ortho4xp-${{ matrix.tileset }} 
 
       - name: Test
-        run: make -n ${{ matrix.tileset }}
+        run: |
+          make ${{ matrix.setname }}_tile_list_chunks
+          make -n ${{ matrix.tileset }}
 
       - name: Setup Ortho4XP
         run: make Ortho4XP
 
       - name: Build
         run: |
-          make ${{ matrix.setname}}_tile_list_chunks
+          make ${{ matrix.setname }}_tile_list_chunks
           make -j 2 ${{ matrix.tileset }}
         if: startsWith(github.ref, 'refs/tags/')
 
