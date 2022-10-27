@@ -8,7 +8,23 @@ jobs:
   build:
     strategy:
       matrix:
-        tileset: [z_aus_pac_00.zip, z_aus_pac_01.zip, z_aus_pac_02.zip, z_aus_pac_03.zip, z_aus_pac_04.zip, z_aus_pac_05.zip, z_aus_pac_06.zip]
+        #tileset: [z_aus_pac_00.zip, z_aus_pac_01.zip, z_aus_pac_02.zip, z_aus_pac_03.zip, z_aus_pac_04.zip, z_aus_pac_05.zip, z_aus_pac_06.zip]
+        tileset: 
+          - z_na_00.zip
+          - z_na_01.zip
+          - z_na_02.zip
+          - z_na_03.zip
+          - z_na_04.zip
+          - z_na_05.zip
+          - z_na_06.zip
+          - z_na_07.zip
+          - z_na_08.zip
+          - z_na_09.zip
+          - z_na_10.zip
+          - z_na_11.zip
+          - z_na_12.zip
+          - z_na_13.zip
+          - z_na_14.zip
 
     env:
       DEBIAN_FRONTEND: noninteractive
