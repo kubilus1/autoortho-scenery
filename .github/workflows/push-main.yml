@@ -26,6 +26,14 @@ jobs:
           - z_na_12.zip
           - z_na_13.zip
           - z_na_14.zip
+          - z_na_15.zip
+          - z_na_16.zip
+          - z_na_17.zip
+          - z_na_18.zip
+          - z_na_19.zip
+          - z_na_20.zip
+          - z_na_21.zip
+          - z_na_22.zip
         setname: [na]
 
     env:

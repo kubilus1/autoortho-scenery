@@ -42,7 +42,7 @@ Ortho4XP:
 	cp extract_overlay.py $@/.
 
 %_chunks: %
-	split $< -d -l 300 $<.
+	split $< -d -l 200 $<.
 
 #
 # Overlay setup
