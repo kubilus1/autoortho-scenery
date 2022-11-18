@@ -27,7 +27,7 @@ jobs:
         id: chunks
         run: |
           make ${{ inputs.tileset }}_tile_list_chunks
-          CHUNKS=$(ls ${{ inputs.tileset }}_tile_list.* | awk '/.+/ { printf "%s%s", sep, "\""$1"\""; sep=", " }')
+          CHUNKS=$(ls ${{ inputs.tileset }}_tile_list.* | awk -F '.' '/.+/ { printf "%s\"z_${{ inputs.tileset }}_%s.zip\"", sep, ""$2""; sep=", " }')
           #CHUNKS=$(ls ${{ inputs.tileset }}_tile_list.* | awk -v ORS=',' '{print $1}')
           echo "chunks={\"chunk\":[$CHUNKS]}" >> $GITHUB_OUTPUT
 
