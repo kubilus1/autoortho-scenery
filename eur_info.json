@@ -1,0 +1,6 @@
+{
+    "id": "eur",
+    "name": "Europse Ortho Set",
+    "ortho_prefix": "z_eur_",
+    "overlay_prefix": "y_eur_overlays"
+}
