@@ -26,8 +26,8 @@ jobs:
       - name: Gen tile sub-lists
         id: chunks
         run: |
-          make ${{ matrix.setname }}_tile_list_chunks
-          CHUNKS=$(ls ${{ matrix.setname }}_tile_list.* | awk -v ORS=',' '{print $1}')
+          make ${{ inputs.tileset }}_tile_list_chunks
+          CHUNKS=$(ls ${{ inputs.tileset }}_tile_list.* | awk -v ORS=',' '{print $1}')
           echo "chunks=${CHUNKS}" >> $GITHUB_OUTPUT
 
   build:
