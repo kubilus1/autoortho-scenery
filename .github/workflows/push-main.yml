@@ -78,7 +78,7 @@ jobs:
       - name: Test
         run: |
           make ${{ inputs.tileset }}_tile_list_chunks
-          make -n ${{ matrix.chunk }}.zip
+          make -n ${{ matrix.chunk }}
 
       - name: Setup Ortho4XP
         run: make Ortho4XP
@@ -86,12 +86,12 @@ jobs:
       - name: Build
         run: |
           make ${{ inputs.tileset }}_tile_list_chunks
-          make -j 2 ${{ matrix.chunk }}.zip
+          make -j 2 ${{ matrix.chunk }}
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: ${{ matrix.chunk }}.zip
+          files: ${{ matrix.chunk }}
 
