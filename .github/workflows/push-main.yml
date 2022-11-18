@@ -27,15 +27,15 @@ jobs:
         id: chunks
         run: |
           make ${{ inputs.tileset }}_tile_list_chunks
-          CHUNKS=$(ls ${{ inputs.tileset }}_tile_list.* | awk -v ORS=',' '{print $1}')
-          echo "chunks=${CHUNKS}" >> $GITHUB_OUTPUT
+          CHUNKS=$(ls ${{ inputs.tileset }}_tile_list.* | awk '/.+/ { printf "%s%s", sep, "\""$1"\""; sep=", " }')
+          #CHUNKS=$(ls ${{ inputs.tileset }}_tile_list.* | awk -v ORS=',' '{print $1}')
+          echo "chunks={\"chunk\":[$CHUNKS]}" >> $GITHUB_OUTPUT
 
   build:
     needs: ziplist
 
     strategy:
-      matrix: 
-        chunk: ${{ needs.ziplist.outputs.chunks }}
+      matrix: ${{ fromJSON(needs.ziplist.outputs.chunks) }}
         #tileset: [z_aus_pac_00.zip, z_aus_pac_01.zip, z_aus_pac_02.zip, z_aus_pac_03.zip, z_aus_pac_04.zip, z_aus_pac_05.zip, z_aus_pac_06.zip]
         #setname: [aus_pacific]
         # tileset: 
