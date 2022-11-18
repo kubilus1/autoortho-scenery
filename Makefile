@@ -40,6 +40,9 @@ Ortho4XP:
 	git clone --depth=1 https://github.com/oscarpilote/Ortho4XP.git
 	cd $@ && patch -p1 -u < ../ortho4xp.diff
 	cp extract_overlay.py $@/.
+	cp Ortho4XP.cfg $@/.
+	mkdir $@/tmp
+
 
 %_chunks: %
 	split $< -d -l 200 $<.
@@ -57,6 +60,7 @@ Ortho4XP/yOrtho4XP_Overlays/*/*/%.dsf: Ortho4XP
 %_overlays.zip: %
 	cp -r Ortho4XP/yOrtho4XP_Overlays $</.
 	zip -r $@ $<
+	split $@ -d -b1G $@.
 
 #
 # Tile pack setup
@@ -78,6 +82,7 @@ $(ZIPS): z_%.zip: z_%
 	zip -r $@ $<
 
 clean:
+	-rm -rf Ortho4XP
 	-rm -rf Ortho4XP/Tiles
 	-rm -rf Ortho4XP/yOrtho4XP_Overlays
 	-rm *.zip
