@@ -1,3 +1,5 @@
+SPLITSIZE=150
+
 AUS_PAC_OVERLAYS=$(addprefix Ortho4XP/yOrtho4XP_Overlays/*/*/, $(shell cat aus_pacific_tile_list) )
 AUS_PACS:=$(addprefix z_aus_pac_, $(shell ls aus_pacific_tile_list.* | awk -F. '{ print $$2 }') ) 
 AUS_PAC_ZIPS=$(addsuffix .zip, $(AUS_PACS))
@@ -55,7 +57,7 @@ Ortho4XP:
 
 
 %_chunks: %
-	split $< -d -l 200 $<.
+	split $< -d -l $(SPLITSIZE) $<.
 
 #
 # Overlay setup
