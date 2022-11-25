@@ -10,6 +10,7 @@ on:
           - na
           - aus_pac
           - eur
+          - test  
       zl:
         type: string
         default: 16

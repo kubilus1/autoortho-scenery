@@ -1,0 +1,6 @@
+{
+    "id": "aus_pac",
+    "name": "Australia Pacific Ortho Set",
+    "ortho_prefix": "z_aus_pac_",
+    "overlay_prefix": "y_aus_pac_overlays"
+}
