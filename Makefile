@@ -1,7 +1,7 @@
 SPLITSIZE?=150
 
-AUS_PAC_OVERLAYS=$(addprefix Ortho4XP/yOrtho4XP_Overlays/*/*/, $(shell cat aus_pacific_tile_list) )
-AUS_PACS:=$(addprefix z_aus_pac_, $(shell ls aus_pacific_tile_list.* | awk -F. '{ print $$2 }') ) 
+AUS_PAC_OVERLAYS=$(addprefix Ortho4XP/yOrtho4XP_Overlays/*/*/, $(shell cat aus_pac_tile_list) )
+AUS_PACS:=$(addprefix z_aus_pac_, $(shell ls aus_pac_tile_list.* | awk -F. '{ print $$2 }') ) 
 AUS_PAC_ZIPS=$(addsuffix .zip, $(AUS_PACS))
 
 NAS:=$(addprefix z_na_, $(shell ls na_tile_list.* | awk -F. '{ print $$2 }') ) 
@@ -21,7 +21,7 @@ ZIPS=$(AUS_PAC_ZIPS) $(NA_ZIPS) $(EUR_ZIPS) $(TEST_ZIPS)
 
 # Get the tiles listed in each list file
 .SECONDEXPANSION:
-AUS_PAC_TILES = $(addprefix Ortho4XP/Tiles/zOrtho4XP_, $(basename $(shell cat aus_pacific_tile_list.$* ) ) )
+AUS_PAC_TILES = $(addprefix Ortho4XP/Tiles/zOrtho4XP_, $(basename $(shell cat aus_pac_tile_list.$* ) ) )
 NA_TILES = $(addprefix Ortho4XP/Tiles/zOrtho4XP_, $(basename $(shell cat na_tile_list.$* ) ) )
 EUR_TILES = $(addprefix Ortho4XP/Tiles/zOrtho4XP_, $(basename $(shell cat eur_tile_list.$* ) ) )
 TEST_TILES = $(addprefix Ortho4XP/Tiles/zOrtho4XP_, $(basename $(shell cat test_tile_list.$* ) ) )
@@ -29,7 +29,7 @@ TEST_TILES = $(addprefix Ortho4XP/Tiles/zOrtho4XP_, $(basename $(shell cat test_
 y_aus_pac: $(AUS_PAC_OVERLAYS)
 	mkdir -p $@
 
-z_aus_pac_%: aus_pacific_tile_list.% $${AUS_PAC_TILES}
+z_aus_pac_%: aus_pac_tile_list.% $${AUS_PAC_TILES}
 	echo "Going to do some $@"
 
 y_na: $(NA_OVERLAYS)
@@ -112,4 +112,4 @@ clean:
 	-rm *.zip
 	-rm -rf z_aus_pac
 	-rm na_tile_list.*
-	-rm aus_pacific_tile_list.*
+	-rm aus_pac_tile_list.*
