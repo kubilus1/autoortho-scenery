@@ -32,18 +32,6 @@ jobs:
           #CHUNKS=$(ls ${{ inputs.tileset }}_tile_list.* | awk -v ORS=',' '{print $1}')
           echo "chunks={\"chunk\":[$CHUNKS]}" >> $GITHUB_OUTPUT
 
-  info:
-    if: startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ${{ inputs.tileset }}_info.json
-
 
   build:
     needs: ziplist
@@ -95,4 +83,20 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: ${{ matrix.chunk }}
+
+  info:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+
+    environment: release
+
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ inputs.tileset }}_info.json
 
