@@ -1,5 +1,5 @@
 diff --git a/Ortho4XP.cfg b/Ortho4XP.cfg
-index 3bd794c..67547a3 100644
+index 3bd794c..fffa9e9 100644
 --- a/Ortho4XP.cfg
 +++ b/Ortho4XP.cfg
 @@ -1,8 +1,8 @@
@@ -19,9 +19,10 @@ index 3bd794c..67547a3 100644
  ovl_exclude_net=[]
  custom_scenery_dir=
 -custom_overlay_src=
+-road_level=1
 +custom_overlay_src=/media/nas/xp_scenery/Global Scenery/X-Plane 11 Global Scenery
 +apt_smoothing_pix=8
- road_level=1
++road_level=2
  road_banking_limit=0.5
 +lane_width=5.0
  max_levelled_segs=100000
@@ -61,7 +62,7 @@ index 3bd794c..67547a3 100644
 -use_decal_on_terrain=False
 +use_decal_on_terrain=True
 diff --git a/Ortho4XP_v130.py b/Ortho4XP_v130.py
-index 58b10c9..57f19c7 100755
+index 58b10c9..511d8a6 100755
 --- a/Ortho4XP_v130.py
 +++ b/Ortho4XP_v130.py
 @@ -61,15 +61,22 @@ if __name__ == '__main__':
@@ -73,7 +74,7 @@ index 58b10c9..57f19c7 100755
                  print(cmd_line); sys.exit()
 +
 +        # Work around backwards return code logic
-+        success = 0
++        success = True
          try:
              VMAP.build_poly_file(tile)
              MESH.build_mesh(tile)
