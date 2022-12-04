@@ -62,19 +62,22 @@ index 3bd794c..fffa9e9 100644
 -use_decal_on_terrain=False
 +use_decal_on_terrain=True
 diff --git a/Ortho4XP_v130.py b/Ortho4XP_v130.py
-index 58b10c9..511d8a6 100755
+index 58b10c9..d6319bc 100755
 --- a/Ortho4XP_v130.py
 +++ b/Ortho4XP_v130.py
-@@ -61,15 +61,22 @@ if __name__ == '__main__':
+@@ -61,15 +61,27 @@ if __name__ == '__main__':
                  tile=CFG.Tile(lat,lon,'')
                  tile.default_website=provider_code
                  tile.default_zl=zoomlevel
+-            except:
 +                tile.read_from_config()
-             except:
++            except Exception as e:
++                print("Some kind of exception occurred!")
++                print(e)
                  print(cmd_line); sys.exit()
 +
 +        # Work around backwards return code logic
-+        success = True
++        success = 1
          try:
              VMAP.build_poly_file(tile)
              MESH.build_mesh(tile)
@@ -87,7 +90,10 @@ index 58b10c9..511d8a6 100755
 - 
 +            sys.exit(1)
 +
-+        if not success:
++        if success:
++            print("Successful tile build")
++        else:
++            print("Unsusccessful tile build.  Exit with error")
 +            sys.exit(1)
          
 diff --git a/src/O4_Config_Utils.py b/src/O4_Config_Utils.py
