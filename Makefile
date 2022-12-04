@@ -1,19 +1,15 @@
 SPLITSIZE?=150
 
-AUS_PAC_OVERLAYS=$(addprefix Ortho4XP/yOrtho4XP_Overlays/*/*/, $(shell cat aus_pac_tile_list) )
 AUS_PACS:=$(addprefix z_aus_pac_, $(shell ls aus_pac_tile_list.* | awk -F. '{ print $$2 }') ) 
 AUS_PAC_ZIPS=$(addsuffix .zip, $(AUS_PACS))
 
 NAS:=$(addprefix z_na_, $(shell ls na_tile_list.* | awk -F. '{ print $$2 }') ) 
-NA_OVERLAYS=$(addprefix Ortho4XP/yOrtho4XP_Overlays/*/*/, $(shell cat na_tile_list) )
 NA_ZIPS=$(addsuffix .zip, $(NAS))
 
 EURS:=$(addprefix z_eur_, $(shell ls eur_tile_list.* | awk -F. '{ print $$2 }') ) 
-EUR_OVERLAYS=$(addprefix Ortho4XP/yOrtho4XP_Overlays/*/*/, $(shell cat eur_tile_list) )
 EUR_ZIPS=$(addsuffix .zip, $(EURS))
 
 TESTS:=$(addprefix z_test_, $(shell ls test_tile_list.* | awk -F. '{ print $$2 }') ) 
-TEST_OVERLAYS=$(addprefix Ortho4XP/yOrtho4XP_Overlays/*/*/, $(shell cat test_tile_list) )
 TEST_ZIPS=$(addsuffix .zip, $(TESTS))
 
 
@@ -26,26 +22,14 @@ NA_TILES = $(addprefix Ortho4XP/Tiles/zOrtho4XP_, $(basename $(shell cat na_tile
 EUR_TILES = $(addprefix Ortho4XP/Tiles/zOrtho4XP_, $(basename $(shell cat eur_tile_list.$* ) ) )
 TEST_TILES = $(addprefix Ortho4XP/Tiles/zOrtho4XP_, $(basename $(shell cat test_tile_list.$* ) ) )
 
-y_aus_pac: $(AUS_PAC_OVERLAYS)
-	mkdir -p $@
-
 z_aus_pac_%: aus_pac_tile_list.% $${AUS_PAC_TILES}
 	echo "Going to do some $@"
-
-y_na: $(NA_OVERLAYS)
-	mkdir -p $@
 
 z_na_%: na_tile_list.% $${NA_TILES}
 	echo "Going to do some $@"
 
-y_eur: $(EUR_OVERLAYS)
-	mkdir -p $@
-
 z_eur_%: eur_tile_list.% $${EUR_TILES}
 	echo "Going to do some $@"
-
-y_test: $(TEST_OVERLAYS)
-	mkdir -p $@
 
 z_test_%: test_tile_list.% $${TEST_TILES}
 	echo "Going to do some $@"
@@ -57,7 +41,7 @@ z_test_%: test_tile_list.% $${TEST_TILES}
 # Ortho4XP setup
 #
 
-ortho4xp.diff:
+ortho4xp.diff: Ortho4XP
 	cd Ortho4XP && git diff > ../ortho4xp.diff
 
 Ortho4XP:
@@ -72,28 +56,16 @@ Ortho4XP:
 	split $< -d -l $(SPLITSIZE) $<.
 
 #
-# Overlay setup
-#
-
-Ortho4XP/yOrtho4XP_Overlays/*/*/%.dsf: Ortho4XP
-	@echo "Make overlay $@"
-	set -e;\
-	export COORDS=$$(echo $@ | sed -e 's|.*/\([-+][0-9]\+\)\([-+][0-9]\+\).dsf|\1 \2|g');\
- 	cd $< && python3 extract_overlay.py $$COORDS
-
-%_overlays.zip: %
-	cp -r Ortho4XP/yOrtho4XP_Overlays $</.
-	zip -r $@ $<
-	split $@ -d -b1G $@.
-
-#
 # Tile pack setup
 #
 
 Ortho4XP/Tiles/zOrtho4XP_%: Ortho4XP
+	@echo "Setup per tile config, if possible"
+	mkdir -p $@
+	-cp Ortho4XP_$*.cfg $@/.
 	@echo "Make tile $@" 
 	set -e;\
-	export COORDS=$$(echo $@ | sed -e 's/.*_\([-+][0-9]\+\)\([-+][0-9]\+\)/\1 \2/g');\
+	export COORDS=$$(echo $* | sed -e 's/\([-+][0-9]\+\)\([-+][0-9]\+\)/\1 \2/g');\
  	cd $< && python3 Ortho4XP_v130.py $$COORDS BI 16
 
 # Static pattern rule for the zip files
@@ -108,7 +80,6 @@ $(ZIPS): z_%.zip: z_%
 clean:
 	-rm -rf Ortho4XP
 	-rm -rf Ortho4XP/Tiles
-	-rm -rf Ortho4XP/yOrtho4XP_Overlays
 	-rm *.zip
 	-rm -rf z_aus_pac
 	-rm na_tile_list.*

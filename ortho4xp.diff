@@ -1,3 +1,122 @@
+diff --git a/Ortho4XP.cfg b/Ortho4XP.cfg
+index 3bd794c..67547a3 100644
+--- a/Ortho4XP.cfg
++++ b/Ortho4XP.cfg
+@@ -1,8 +1,8 @@
+ verbosity=1
+-cleaning_level=1
++cleaning_level=3
+ overpass_server_choice=DE
+-skip_downloads=False
+-skip_converts=False
++skip_downloads=True
++skip_converts=True
+ max_convert_slots=4
+ check_tms_response=True
+ http_timeout=10.0
+@@ -11,12 +11,15 @@ max_baddata_retries=5
+ ovl_exclude_pol=[0]
+ ovl_exclude_net=[]
+ custom_scenery_dir=
+-custom_overlay_src=
++custom_overlay_src=/media/nas/xp_scenery/Global Scenery/X-Plane 11 Global Scenery
++apt_smoothing_pix=8
+ road_level=1
+ road_banking_limit=0.5
++lane_width=5.0
+ max_levelled_segs=100000
++water_simplification=0.0
+ min_area=0.001
+-max_area=200
++max_area=200.0
+ clean_bad_geometries=True
+ mesh_zl=19
+ curvature_tol=2.0
+@@ -27,7 +30,6 @@ coast_curv_ext=0.5
+ limit_tris=0
+ hmin=0.0
+ min_angle=10.0
+-apt_smoothing_pix=8
+ sea_smoothing_mode=zero
+ water_smoothing=10
+ iterate=0
+@@ -35,10 +37,11 @@ mask_zl=14
+ masks_width=100
+ masking_mode=sand
+ use_masks_for_inland=False
++imprint_masks_to_dds=False
+ masks_use_DEM_too=False
+ masks_custom_extent=
+-cover_airports_with_highres=False
+-cover_extent=1.0
++cover_airports_with_highres=True
++cover_extent=0.5
+ cover_zl=18
+ ratio_water=0.25
+ overlay_lod=25000.0
+@@ -47,4 +50,4 @@ add_low_res_sea_ovl=False
+ experimental_water=0
+ normal_map_strength=1.0
+ terrain_casts_shadows=True
+-use_decal_on_terrain=False
++use_decal_on_terrain=True
+diff --git a/Ortho4XP_v130.py b/Ortho4XP_v130.py
+index 58b10c9..57f19c7 100755
+--- a/Ortho4XP_v130.py
++++ b/Ortho4XP_v130.py
+@@ -61,15 +61,22 @@ if __name__ == '__main__':
+                 tile=CFG.Tile(lat,lon,'')
+                 tile.default_website=provider_code
+                 tile.default_zl=zoomlevel
++                tile.read_from_config()
+             except:
+                 print(cmd_line); sys.exit()
++
++        # Work around backwards return code logic
++        success = 0
+         try:
+             VMAP.build_poly_file(tile)
+             MESH.build_mesh(tile)
+             MASK.build_masks(tile)
+-            TILE.build_tile(tile)
++            success = TILE.build_tile(tile)
+             print("Bon vol!")
+         except:
+             print("Crash!")
+- 
++            sys.exit(1)
++
++        if not success:
++            sys.exit(1)
+         
+diff --git a/src/O4_Config_Utils.py b/src/O4_Config_Utils.py
+index aa4eda4..2360962 100755
+--- a/src/O4_Config_Utils.py
++++ b/src/O4_Config_Utils.py
+@@ -155,12 +155,14 @@ class Tile():
+     def read_from_config(self,config_file=None):
+         if not config_file: 
+             config_file=os.path.join(self.build_dir,"Ortho4XP_"+FNAMES.short_latlon(self.lat,self.lon)+".cfg")
++            print(f"CONFIG FILE: {config_file}")
+             if not os.path.isfile(config_file):
+                 config_file=os.path.join(self.build_dir,"Ortho4XP.cfg")
+                 if not os.path.isfile(config_file):
+                     UI.lvprint(0,"CFG error: No config file found for tile",FNAMES.short_latlon(self.lat,self.lon))
+                     return 0
+         try:
++            print(f"CONFIG FILE: {config_file}")
+             f=open(config_file,'r')
+             for line in f.readlines():
+                 line=line.strip()
+@@ -369,6 +371,8 @@ class Ortho4XP_Config(tk.Toplevel):
+         custom_build_dir=self.parent.custom_build_dir_entry.get()
+         build_dir=FNAMES.build_dir(lat,lon,custom_build_dir)
+         try: 
++            tilecfg=os.path.join(build_dir,'Ortho4XP_'+FNAMES.short_latlon(lat,lon)+'.cfg')
++            print(f"TILE CFG: {tilecfg}")
+             f=open(os.path.join(build_dir,'Ortho4XP_'+FNAMES.short_latlon(lat,lon)+'.cfg'),'r')
+         except:
+             try:
 diff --git a/src/O4_GUI_Utils.py b/src/O4_GUI_Utils.py
 index a9de2da..c389a88 100755
 --- a/src/O4_GUI_Utils.py
@@ -113,3 +232,29 @@ index 333d453..dd9b71e 100755
      return 
  ###############################################################################################################################
  
+diff --git a/src/O4_Mesh_Utils.py b/src/O4_Mesh_Utils.py
+index 497cc73..28b7e8d 100755
+--- a/src/O4_Mesh_Utils.py
++++ b/src/O4_Mesh_Utils.py
+@@ -427,11 +427,12 @@ def build_mesh(tile):
+               '{:.9g}'.format(tile.dem.nodata),
+               '{:.9g}'.format(tile.curvature_tol*curv_tol_scaling),
+               '{:.9g}'.format(tile.min_angle),str(hmin_effective),alt_file,weight_file,poly_file]
+-    
++    print(mesh_cmd) 
+     del(tile.dem) # for machines with not much RAM, we do not need it anymore
+     tile.dem=None
+     UI.vprint(1,"-> Start of the mesh algorithm Triangle4XP.")
+     UI.vprint(2,'   Mesh command:',' '.join(mesh_cmd))
++    print(f"   Mesh command: {' '.join(mesh_cmd)}")
+     fingers_crossed=subprocess.Popen(mesh_cmd,stdout=subprocess.PIPE,bufsize=0)
+     while True:
+         line = fingers_crossed.stdout.readline()
+@@ -448,6 +449,7 @@ def build_mesh(tile):
+         UI.vprint(0,"\nWARNING: Triangle4XP could not achieve the requested quality (min_angle), most probably due to an uncatched OSM error.\n"+\
+                     "It will be tempted now with no angle constraint (i.e. min_angle=0).")
+         mesh_cmd[-5]='{:.9g}'.format(0)
++        print(mesh_cmd) 
+         fingers_crossed=subprocess.Popen(mesh_cmd,stdout=subprocess.PIPE,bufsize=0)
+         while True:
+             line = fingers_crossed.stdout.readline()

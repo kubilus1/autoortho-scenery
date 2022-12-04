@@ -1,0 +1,46 @@
+OVERLAYNAME?=test
+
+OVERLAYS=$(addprefix y_$(OVERLAYNAME)/yOrtho4XP_Overlays/*/*/, $(shell cat $(OVERLAYNAME)_tile_list) )
+
+y_$(OVERLAYNAME)_overlays.zip: $(OVERLAYS)
+	zip -r $@ y_$(OVERLAYNAME)
+	split $@ -d -b1G $@.
+
+y_$(OVERLAYNAME):
+	mkdir -p $@
+
+y_$(OVERLAYNAME)/yOrtho4XP_Overlays/*/*/%.dsf: Ortho4XP/yOrtho4XP_Overlays/*/*/%.dsf y_$(OVERLAYNAME)
+	set -e;\
+	export DSTREGION=$$(echo "$<" | awk -F "/" '{print $$4}');\
+	export DSTFILE=$$(echo "$<" | awk -F "/" '{print $$5}');\
+	export DSTPATH="y_$(OVERLAYNAME)/yOrtho4XP_Overlays/Earth nav data/$$DSTREGION/$$DSTFILE";\
+	echo "$$DSTPATH";\
+	mkdir -p "$$(dirname "$$DSTPATH")";\
+	cp "$<" "$$DSTPATH" || true;
+
+
+Ortho4XP/yOrtho4XP_Overlays/*/*/%.dsf: Ortho4XP
+	@echo "Make overlay $@"
+	set -e;\
+	export COORDS=$$(echo $@ | sed -e 's|.*/\([-+][0-9]\+\)\([-+][0-9]\+\).dsf|\1 \2|g');\
+ 	cd $< && python3 extract_overlay.py $$COORDS
+
+
+#
+# Ortho4XP setup
+#
+
+ortho4xp.diff:
+	cd Ortho4XP && git diff > ../ortho4xp.diff
+
+Ortho4XP:
+	git clone --depth=1 https://github.com/oscarpilote/Ortho4XP.git
+	cd $@ && patch -p1 -u < ../ortho4xp.diff
+	cp extract_overlay.py $@/.
+	cp Ortho4XP.cfg $@/.
+	mkdir $@/tmp
+
+clean:
+	-rm -rf Ortho4XP
+	-rm -rf y_$(OVERLAYNAME)
+	-rm -rf y_$(OVERLAYNAME)_overlays.zip
