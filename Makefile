@@ -59,6 +59,7 @@ Ortho4XP:
 # Tile pack setup
 #
 
+.SECONDARY: $(AUS_PAC_TILES) $(NA_TILES) $(EUR_TILES) $(TEST_TILES)
 Ortho4XP/Tiles/zOrtho4XP_%: Ortho4XP
 	@echo "Setup per tile config, if possible"
 	mkdir -p $@
