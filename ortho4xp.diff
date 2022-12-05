@@ -62,7 +62,7 @@ index 3bd794c..fffa9e9 100644
 -use_decal_on_terrain=False
 +use_decal_on_terrain=True
 diff --git a/Ortho4XP_v130.py b/Ortho4XP_v130.py
-index 58b10c9..808b373 100755
+index 58b10c9..c584c53 100755
 --- a/Ortho4XP_v130.py
 +++ b/Ortho4XP_v130.py
 @@ -61,15 +61,28 @@ if __name__ == '__main__':
@@ -90,7 +90,7 @@ index 58b10c9..808b373 100755
              print("Crash!")
 - 
 +            print(e)
-+            sys.exit(1)
++            #sys.exit(1)
 +
 +        if success:
 +            print("Successful tile build")
