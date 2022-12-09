@@ -1,0 +1,6 @@
+{
+    "id": "sa",
+    "name": "South America Ortho Set",
+    "ortho_prefix": "z_sa_",
+    "overlay_prefix": "y_sa_overlays"
+}
