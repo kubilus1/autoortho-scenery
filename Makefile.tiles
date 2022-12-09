@@ -1,0 +1,63 @@
+SPLITSIZE?=150
+
+TILENAME?=test
+
+TILES:=$(addprefix z_$(TILENAME)_, $(shell ls $(TILENAME)_tile_list.* | awk -F. '{ print $$2 }') ) 
+TILE_ZIPS=$(addsuffix .zip, $(TILES))
+
+ZIPS=$(TILE_ZIPS)
+
+# Get the tiles listed in each list file
+.SECONDEXPANSION:
+TILE_FILES = $(addprefix Ortho4XP/Tiles/zOrtho4XP_, $(basename $(shell cat $(TILENAME)_tile_list.$* ) ) )
+
+
+all: $(ZIPS)
+
+z_$(TILENAME)_%: $(TILENAME)_tile_list.% $${TILE_FILES}
+	echo "Going to do some $@"
+
+#
+# Ortho4XP setup
+#
+
+ortho4xp.diff:
+	cd Ortho4XP && git diff > ../ortho4xp.diff
+
+Ortho4XP:
+	git clone --depth=1 https://github.com/oscarpilote/Ortho4XP.git
+	cd $@ && patch -p1 -u < ../ortho4xp.diff
+	cp extract_overlay.py $@/.
+	cp Ortho4XP.cfg $@/.
+	mkdir $@/tmp
+
+
+#$(TILENAME)_tile_list.%: $(TILENAME)_tile_list_chunks
+$(TILENAME)_tile_list_chunks: $(TILENAME)_tile_list
+	split $< -d -l $(SPLITSIZE) $<.
+	
+
+#
+# Tile pack setup
+#
+
+Ortho4XP/Tiles/zOrtho4XP_%: Ortho4XP
+	@echo "Make tile $@" 
+	set -e;\
+	export COORDS=$$(echo $@ | sed -e 's/.*_\([-+][0-9]\+\)\([-+][0-9]\+\)/\1 \2/g');\
+ 	cd $< && python3 Ortho4XP_v130.py $$COORDS BI 16
+
+# Static pattern rule for the zip files
+$(ZIPS): z_%.zip: z_%
+	mkdir -p $<
+	cp -r Ortho4XP/Tiles/zOrtho4XP_*/'Earth nav data' $</.
+	cp -r Ortho4XP/Tiles/zOrtho4XP_*/terrain $</.
+	cp -r Ortho4XP/Tiles/zOrtho4XP_*/textures $</.
+	cp ORTHO_SETUP.md $</.
+	zip -r $@ $<
+
+clean:
+	-rm -rf Ortho4XP
+	-rm $(ZIPS)
+	-rm -rf z_$(TILENAME)
+	-rm $(TILENAME)_tile_list.*

@@ -7,6 +7,7 @@ on:
       tileset:
         type: choice
         options:
+          - sa
           - na
           - aus_pac
           - eur
@@ -27,7 +28,7 @@ jobs:
       - name: Gen tile sub-lists
         id: chunks
         run: |
-          make ${{ inputs.tileset }}_tile_list_chunks
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.tileset }}_tile_list_chunks
           CHUNKS=$(ls ${{ inputs.tileset }}_tile_list.* | awk -F '.' '/.+/ { printf "%s\"z_${{ inputs.tileset }}_%s.zip\"", sep, ""$2""; sep=", " }')
           #CHUNKS=$(ls ${{ inputs.tileset }}_tile_list.* | awk -v ORS=',' '{print $1}')
           echo "chunks={\"chunk\":[$CHUNKS]}" >> $GITHUB_OUTPUT
@@ -66,16 +67,16 @@ jobs:
 
       - name: Test
         run: |
-          make ${{ inputs.tileset }}_tile_list_chunks
-          make -n ${{ matrix.chunk }}
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.tileset }}_tile_list_chunks
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ matrix.chunk }}
 
       - name: Setup Ortho4XP
-        run: make Ortho4XP
+        run: TILENAME=${{ inputs.tileset }} make Ortho4XP
 
       - name: Build
         run: |
-          make ${{ inputs.tileset }}_tile_list_chunks
-          make -j 2 ${{ matrix.chunk }}
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.tileset }}_tile_list_chunks
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles -j 2 ${{ matrix.chunk }}
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Release
