@@ -1,0 +1,6 @@
+{
+    "id": "afr",
+    "name": "Africa Ortho Set",
+    "ortho_prefix": "z_afr_",
+    "overlay_prefix": "y_afr_overlays"
+}
