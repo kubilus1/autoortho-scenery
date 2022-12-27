@@ -1,6 +1,6 @@
 cython
 numpy
-shapely
+shapely==1.7.1
 rtree
 pillow
 requests
