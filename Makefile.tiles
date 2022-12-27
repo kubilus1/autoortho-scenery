@@ -42,6 +42,9 @@ $(TILENAME)_tile_list_chunks: $(TILENAME)_tile_list
 #
 
 Ortho4XP/Tiles/zOrtho4XP_%: Ortho4XP
+	@echo "Setup per tile config, if possible"
+	mkdir -p $@
+	-cp Ortho4XP_$*.cfg $@/.
 	@echo "Make tile $@" 
 	set -e;\
 	export COORDS=$$(echo $@ | sed -e 's/.*_\([-+][0-9]\+\)\([-+][0-9]\+\)/\1 \2/g');\
