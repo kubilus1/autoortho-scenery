@@ -1,6 +1,6 @@
 cython
-numpy
-geos
+numpy<1.20.0
+#geos
 shapely<2.0.0
 rtree
 pillow

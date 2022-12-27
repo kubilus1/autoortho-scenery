@@ -10,32 +10,14 @@ certifi==2022.12.7
     #   requests
 charset-normalizer==2.1.1
     # via requests
-click==8.1.3
-    # via flask
 cython==0.29.32
-    # via -r requirements.in
-flask==2.2.2
-    # via geos
-geos==0.2.3
     # via -r requirements.in
 idna==3.4
     # via requests
-itsdangerous==2.1.2
-    # via flask
-jinja2==3.1.2
-    # via flask
-lxml==4.9.2
-    # via geos
-markupsafe==2.1.1
-    # via
-    #   jinja2
-    #   werkzeug
-numpy==1.24.1
+numpy==1.19.5
     # via -r requirements.in
 pillow==9.3.0
-    # via
-    #   -r requirements.in
-    #   geos
+    # via -r requirements.in
 pyproj==3.4.1
     # via -r requirements.in
 requests==2.28.1
@@ -46,5 +28,3 @@ shapely==1.7.1
     # via -r requirements.in
 urllib3==1.26.13
     # via requests
-werkzeug==2.2.2
-    # via flask
