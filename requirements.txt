@@ -14,7 +14,7 @@ cython==0.29.32
     # via -r requirements.in
 idna==3.4
     # via requests
-numpy==1.19.5
+numpy==1.23.0
     # via -r requirements.in
 pillow==9.3.0
     # via -r requirements.in
