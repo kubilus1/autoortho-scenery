@@ -1,6 +1,7 @@
 cython
 numpy
-shapely==1.7.1
+geos
+shapely<2.0.0
 rtree
 pillow
 requests
