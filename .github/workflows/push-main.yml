@@ -7,6 +7,7 @@ on:
       tileset:
         type: choice
         options:
+          - asi
           - afr
           - sa
           - na

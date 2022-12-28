@@ -14,7 +14,7 @@ y_$(OVERLAYNAME)/yOrtho4XP_Overlays/*/*/%.dsf: Ortho4XP/yOrtho4XP_Overlays/*/*/%
 	export DSTREGION=$$(echo "$<" | awk -F "/" '{print $$4}');\
 	export DSTFILE=$$(echo "$<" | awk -F "/" '{print $$5}');\
 	export DSTPATH="y_$(OVERLAYNAME)/yOrtho4XP_Overlays/Earth nav data/$$DSTREGION/$$DSTFILE";\
-	echo "$$DSTPATH";\
+	echo "Copy $< to $$DSTPATH";\
 	mkdir -p "$$(dirname "$$DSTPATH")";\
 	cp "$<" "$$DSTPATH" || true;
 
