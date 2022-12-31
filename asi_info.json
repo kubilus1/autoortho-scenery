@@ -1,0 +1,6 @@
+{
+    "id": "asi",
+    "name": "Asia Ortho Set",
+    "ortho_prefix": "z_asi_",
+    "overlay_prefix": "y_asi_overlays"
+}
