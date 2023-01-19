@@ -67,11 +67,6 @@ jobs:
           restore-keys: |
             ortho4xp-${{ matrix.chunk }} 
 
-      - name: Test
-        run: |
-          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.tileset }}_tile_list_chunks
-          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ matrix.chunk }}
-
       - name: Setup Ortho4XP
         run: TILENAME=${{ inputs.tileset }} make Ortho4XP
 
