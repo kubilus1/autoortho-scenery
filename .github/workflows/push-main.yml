@@ -17,8 +17,8 @@ on:
       zl:
         type: string
         default: 16
+
 jobs:
-  
   ziplist:
     runs-on: ubuntu-22.04
     outputs:
@@ -81,6 +81,13 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: ${{ matrix.chunk }}
+
+      - name: Show work
+        if: startsWith(github.ref, 'refs/tags/')
+        run:
+          echo '### {{ inputs.tileset }} : {{ matrix.chunk }}' >> $GITHUB_STEP_SUMMARY
+          unzip -l {{ matrix.chunk }} >> $GITHUB_STEP_SUMMARY
+          echo '---' >> $GITHUB_STEP_SUMMARY
 
   info:
     if: startsWith(github.ref, 'refs/tags/')

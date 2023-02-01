@@ -54,3 +54,9 @@ jobs:
         run: |
           make test_tile_list_chunks
           make -j 2 ${{ matrix.chunk }}
+      
+      - name: Show work
+        run:
+          echo '### {{ inputs.tileset }} : {{ matrix.chunk }}' >> $GITHUB_STEP_SUMMARY
+          unzip -l {{ matrix.chunk }} >> $GITHUB_STEP_SUMMARY
+          echo '---' >> $GITHUB_STEP_SUMMARY
