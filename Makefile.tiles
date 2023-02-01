@@ -9,14 +9,24 @@ ZIPS=$(TILE_ZIPS)
 
 # Get the tiles listed in each list file
 .SECONDEXPANSION:
-TILE_FILES = $(addprefix Ortho4XP/Tiles/zOrtho4XP_, $(basename $(shell cat $(TILENAME)_tile_list.$* ) ) )
+TILE_FILES = $(addsuffix /.done, $(addprefix Ortho4XP/Tiles/zOrtho4XP_, $(basename $(shell cat $(TILENAME)_tile_list.$* ) ) ) )
+#TILE_FILES = $(basename $(shell cat $(TILENAME)_tile_list.$* ) )
 
 
 all: $(ZIPS)
 
 z_$(TILENAME)_%: $(TILENAME)_tile_list.% $${TILE_FILES}
-	echo "Going to do some $@"
-
+	@echo "Going to do some $@"
+	@echo "Expected tile len:"
+	@cat $< | wc -l
+	@echo "Actual tile len:"
+	@unzip -l $@.zip *.dsf | grep dsf | wc -l
+	
+z_$(TILENAME)_%.zip.info: $(TILENAME)_tile_list.%
+	@echo "Expected tile len:"
+	@cat $< | wc -l
+	@echo "Actual tile len:"
+	@unzip -l $(basename $@) *.dsf | grep dsf | wc -l
 #
 # Ortho4XP setup
 #
@@ -41,14 +51,21 @@ $(TILENAME)_tile_list_chunks: $(TILENAME)_tile_list
 # Tile pack setup
 #
 
-Ortho4XP/Tiles/zOrtho4XP_%: Ortho4XP
+#Ortho4XP/Tiles/zOrtho4XP_%: Ortho4XP/Tiles/zOrtho4XP_%/.done
+#.PHONY: %.dsf
+#%.dsf: Ortho4XP/Tiles/zOrtho4XP_%/.done
+#	echo $<
+Ortho4XP/Tiles/zOrtho4XP_%/.done: Ortho4XP 
 	@echo "Setup per tile config, if possible"
-	mkdir -p $@
-	-cp Ortho4XP_$*.cfg $@/.
-	@echo "Make tile $@" 
+	mkdir -p $(@D)
+	-cp Ortho4XP_$*.cfg $(@D)/.
+	@echo "Make tile $(@D)" 
 	set -e;\
-	export COORDS=$$(echo $@ | sed -e 's/.*_\([-+][0-9]\+\)\([-+][0-9]\+\)/\1 \2/g');\
- 	cd $< && python3 Ortho4XP_v130.py $$COORDS BI 16 || ( cp $(CURDIR)/Ortho4XP_noroads.cfg $(CURDIR)/$@/Ortho4XP_$*.cfg && python3 Ortho4XP_v130.py $$COORDS BI 16 )
+	export COORDS=$$(echo $(@D) | sed -e 's/.*_\([-+][0-9]\+\)\([-+][0-9]\+\)/\1 \2/g');\
+ 	cd $< && python3 Ortho4XP_v130.py $$COORDS BI 16 || ( cp $(CURDIR)/Ortho4XP_noroads.cfg $(CURDIR)/$(@D)/Ortho4XP_$*.cfg && python3 Ortho4XP_v130.py $$COORDS BI 16 )
+	touch $@
+
+.SECONDARY: $(TILE_FILES) 
 
 # Static pattern rule for the zip files
 $(ZIPS): z_%.zip: z_%
@@ -56,8 +73,9 @@ $(ZIPS): z_%.zip: z_%
 	cp -r Ortho4XP/Tiles/zOrtho4XP_*/'Earth nav data' $</.
 	cp -r Ortho4XP/Tiles/zOrtho4XP_*/terrain $</.
 	cp -r Ortho4XP/Tiles/zOrtho4XP_*/textures $</.
-	cp ORTHO_SETUP.md $</.
 	zip -r $@ $<
+	
+		
 
 clean:
 	-rm -rf Ortho4XP
