@@ -15,7 +15,7 @@ jobs:
       - name: Gen tile sub-lists
         id: chunks
         run: |
-          TILENAME=test make -n -f Makefile.tiles test_tile_list_chunks
+          TILENAME=test make -f Makefile.tiles test_tile_list_chunks
           CHUNKS=$(ls test_tile_list.* | awk -F '.' '/.+/ { printf "%s\"z_test_%s.zip\"", sep, ""$2""; sep=", " }')
           echo "chunks={\"chunk\":[$CHUNKS]}" >> $GITHUB_OUTPUT
 
@@ -44,7 +44,7 @@ jobs:
       
       - name: Test
         run: |
-          TILENAME=test make -n -f Makefile.tiles test_tile_list_chunks
+          TILENAME=test make -f Makefile.tiles test_tile_list_chunks
           TILENAME=test make -n -f Makefile.tiles ${{ matrix.chunk }}
 
       - name: Setup Ortho4XP
@@ -52,7 +52,7 @@ jobs:
 
       - name: Build
         run: |
-          TILENAME=test make -n -f Makefile.tiles test_tile_list_chunks
+          TILENAME=test make -f Makefile.tiles test_tile_list_chunks
           TILENAME=test make -f Makefile.tiles -j 2 ${{ matrix.chunk }}
       
       - name: Show work
