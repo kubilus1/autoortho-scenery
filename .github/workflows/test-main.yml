@@ -58,5 +58,5 @@ jobs:
       - name: Show work
         run: |
           echo '### {{ inputs.tileset }} : {{ matrix.chunk }}' >> $GITHUB_STEP_SUMMARY
-          unzip -l {{ matrix.chunk }} >> $GITHUB_STEP_SUMMARY
+          unzip -l {{ matrix.chunk }} *.dsf >> $GITHUB_STEP_SUMMARY
           echo '---' >> $GITHUB_STEP_SUMMARY
