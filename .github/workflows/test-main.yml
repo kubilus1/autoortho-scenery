@@ -60,6 +60,6 @@ jobs:
           echo '### ${{ inputs.tileset }} : ${{ matrix.chunk }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           unzip -l ${{ matrix.chunk }} *.dsf >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
           TILENAME=test make -f Makefile.tiles ${{ matrix.chunk }}.info >>  $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
           echo '---' >> $GITHUB_STEP_SUMMARY

@@ -24,9 +24,9 @@ z_$(TILENAME)_%: $(TILENAME)_tile_list.% $${TILE_FILES}
 	
 z_$(TILENAME)_%.zip.info: $(TILENAME)_tile_list.%
 	@echo "Expected tile len:"
-	@cat $< | wc -l
+	cat $< | wc -l
 	@echo "Actual tile len:"
-	@unzip -l $(basename $@) *.dsf | grep dsf | wc -l
+	unzip -l $(basename $@) *.dsf | grep dsf | wc -l
 #
 # Ortho4XP setup
 #
