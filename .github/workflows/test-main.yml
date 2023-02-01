@@ -45,7 +45,7 @@ jobs:
       - name: Test
         run: |
           make test_tile_list_chunks
-          make -n ${{ matrix.chunk }}
+          TILENAME=test make -n -f Makefile.tiles ${{ matrix.chunk }}
 
       - name: Setup Ortho4XP
         run: make Ortho4XP
@@ -53,7 +53,7 @@ jobs:
       - name: Build
         run: |
           make test_tile_list_chunks
-          make -j 2 ${{ matrix.chunk }}
+          TILENAME=test make -f Makefile.tiles -j 2 ${{ matrix.chunk }}
       
       - name: Show work
         run: |
@@ -61,4 +61,5 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           unzip -l ${{ matrix.chunk }} *.dsf >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+          TILENAME=test make -f Makefile.tiles ${{ matrix.chunk }}.info >>  $GITHUB_STEP_SUMMARY
           echo '---' >> $GITHUB_STEP_SUMMARY

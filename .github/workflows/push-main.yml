@@ -89,6 +89,7 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           unzip -l ${{ matrix.chunk }} *.dsf >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ matrix.chunk }}.info >>  $GITHUB_STEP_SUMMARY
           echo '---' >> $GITHUB_STEP_SUMMARY
 
   info:
