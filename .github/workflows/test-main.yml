@@ -53,7 +53,7 @@ jobs:
       - name: Build
         run: |
           TILENAME=test make -f Makefile.tiles test_tile_list_chunks
-          TILENAME=test make -f Makefile.tiles -j 2 ${{ matrix.chunk }}
+          TILENAME=test make -f Makefile.tiles ${{ matrix.chunk }}
       
       - name: Show work
         run: |
