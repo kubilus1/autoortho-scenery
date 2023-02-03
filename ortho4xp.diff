@@ -62,10 +62,10 @@ index 3bd794c..fffa9e9 100644
 -use_decal_on_terrain=False
 +use_decal_on_terrain=True
 diff --git a/Ortho4XP_v130.py b/Ortho4XP_v130.py
-index 58b10c9..c584c53 100755
+index 58b10c9..daba489 100755
 --- a/Ortho4XP_v130.py
 +++ b/Ortho4XP_v130.py
-@@ -61,15 +61,28 @@ if __name__ == '__main__':
+@@ -61,15 +61,33 @@ if __name__ == '__main__':
                  tile=CFG.Tile(lat,lon,'')
                  tile.default_website=provider_code
                  tile.default_zl=zoomlevel
@@ -79,10 +79,14 @@ index 58b10c9..c584c53 100755
 +        # Work around backwards return code logic
 +        success = 1
          try:
++            print("Build poly file")
              VMAP.build_poly_file(tile)
++            print("Build mesh")
              MESH.build_mesh(tile)
++            print("Build masks")
              MASK.build_masks(tile)
 -            TILE.build_tile(tile)
++            print("Build tile")
 +            success = TILE.build_tile(tile)
              print("Bon vol!")
 -        except:
@@ -90,6 +94,7 @@ index 58b10c9..c584c53 100755
              print("Crash!")
 - 
 +            print(e)
++            success = 0
 +            #sys.exit(1)
 +
 +        if success:
@@ -99,7 +104,7 @@ index 58b10c9..c584c53 100755
 +            sys.exit(1)
          
 diff --git a/src/O4_Config_Utils.py b/src/O4_Config_Utils.py
-index aa4eda4..2360962 100755
+index 32067a1..fbba41c 100755
 --- a/src/O4_Config_Utils.py
 +++ b/src/O4_Config_Utils.py
 @@ -155,12 +155,14 @@ class Tile():
@@ -127,10 +132,10 @@ index aa4eda4..2360962 100755
          except:
              try:
 diff --git a/src/O4_GUI_Utils.py b/src/O4_GUI_Utils.py
-index a9de2da..c389a88 100755
+index ce2d629..7f882a1 100755
 --- a/src/O4_GUI_Utils.py
 +++ b/src/O4_GUI_Utils.py
-@@ -849,6 +849,12 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
+@@ -853,6 +853,12 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
          self.canvas.bind("<Double-Button-1>",self.select_tile)
          self.canvas.bind("<Shift-ButtonPress-1>",self.add_tile)
          self.canvas.bind("<Control-ButtonPress-1>",self.toggle_to_custom)
@@ -143,7 +148,7 @@ index a9de2da..c389a88 100755
          self.canvas.focus_set()
          self.draw_canvas(self.nx0,self.ny0)
          self.active_lat=lat 
-@@ -1096,6 +1102,39 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
+@@ -1100,6 +1106,39 @@ class Ortho4XP_Earth_Preview(tk.Toplevel):
              self.dico_tiles_todo.pop((lat,lon),None)
          return
  
@@ -267,3 +272,15 @@ index 497cc73..28b7e8d 100755
          fingers_crossed=subprocess.Popen(mesh_cmd,stdout=subprocess.PIPE,bufsize=0)
          while True:
              line = fingers_crossed.stdout.readline()
+diff --git a/src/O4_Tile_Utils.py b/src/O4_Tile_Utils.py
+index 036430e..d6e5044 100755
+--- a/src/O4_Tile_Utils.py
++++ b/src/O4_Tile_Utils.py
+@@ -75,6 +75,7 @@ def build_tile(tile):
+         UI.lvprint(0,"ERROR: Cannot create tile subdirectories.")
+         UI.vprint(3,e)
+         UI.exit_message_and_bottom_line('')
++        # :(
+         return 0
+     
+     download_queue=queue.Queue()

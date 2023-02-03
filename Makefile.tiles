@@ -71,7 +71,7 @@ Ortho4XP/Tiles/*/*/*/%.dsf: Ortho4XP
 	set -e;\
 	export COORDS=$$(echo $(@) | sed -e 's/.*\/\([-+][0-9]\+\)\([-+][0-9]\+\).dsf/\1 \2/g');\
 	echo $$COORDS; \
- 	cd $< && python3 Ortho4XP_v130.py $$COORDS BI 16 || ( cp $(CURDIR)/Ortho4XP_noroads.cfg $(CURDIR)/Ortho4XP/Tiles/zOrtho4XP_$*/Ortho4XP_$*.cfg && python3 Ortho4XP_v130.py $$COORDS BI 16 )
+ 	cd $< && python3 Ortho4XP_v130.py $$COORDS BI 16 || ( echo "ERROR DETECTED! Retry tile $@ with noroads config."; cp $(CURDIR)/Ortho4XP_noroads.cfg $(CURDIR)/Ortho4XP/Tiles/zOrtho4XP_$*/Ortho4XP_$*.cfg && python3 Ortho4XP_v130.py $$COORDS BI 16 )
 	#touch $@
 
 .SECONDARY: $(TILE_FILES) 
