@@ -73,7 +73,7 @@ jobs:
       - name: Build
         run: |
           TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.tileset }}_tile_list_chunks
-          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles -j 2 ${{ matrix.chunk }}
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ matrix.chunk }}
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Release
