@@ -60,7 +60,7 @@ jobs:
       
       - name: always-upload-cache
         if: always()
-        uses: pat-s/always-upload-cache@v3.0.1
+        uses: pat-s/always-upload-cache@v3.0.11
         with:
           path: ./Ortho4XP
           key: ortho4xp-${{ matrix.chunk }}-${{ github.run_id }}
