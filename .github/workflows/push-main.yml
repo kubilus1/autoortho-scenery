@@ -81,9 +81,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: 
-            - ${{ matrix.chunk }}
-            - ${{ matrix.chunk }}.sha256
+          files: | 
+            ${{ matrix.chunk }}
+            ${{ matrix.chunk }}.sha256
 
       - name: Show work
         if: startsWith(github.ref, 'refs/tags/')
