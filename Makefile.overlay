@@ -6,6 +6,9 @@ y_$(OVERLAYNAME)_overlays.zip: $(OVERLAYS)
 	zip -r $@ y_$(OVERLAYNAME)
 	split $@ -d -b1G $@.
 
+%.sha256: %		
+	sha256sum $< > $@
+
 y_$(OVERLAYNAME):
 	mkdir -p $@
 

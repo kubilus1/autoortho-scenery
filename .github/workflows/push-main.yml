@@ -73,14 +73,17 @@ jobs:
       - name: Build
         run: |
           TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.tileset }}_tile_list_chunks
-          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ matrix.chunk }}
+          ZL=${{ inputs.zl }} TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ matrix.chunk }}
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ matrix.chunk }}.sha256
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: ${{ matrix.chunk }}
+          files: 
+            - ${{ matrix.chunk }}
+            - ${{ matrix.chunk }}.sha256
 
       - name: Show work
         if: startsWith(github.ref, 'refs/tags/')
