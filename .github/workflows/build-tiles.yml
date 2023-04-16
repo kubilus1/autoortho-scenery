@@ -1,0 +1,78 @@
+name: Test
+
+on:
+  workflow_call:
+    inputs:
+      zip:
+        required: true
+        type: string
+      setname:
+        required: true
+        type: string
+
+  build:
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: America/NewYork
+
+    runs-on: ubuntu-22.04
+
+    outputs:
+      done: steps.build.outputs.done
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install reqs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip python3-tk zip libgeos-dev
+          python3 -m pip install -r requirements.txt
+          make --version
+      
+      - name: upload-cache
+        if: always()
+        uses: actions/cache@v3 
+        with:
+          path: ./Ortho4XP
+          key: ortho4xp-${{ inputs.zip }}-${{ github.run_id }}
+          restore-keys: |
+            ortho4xp-${{ inputs.zip }}-${{ github.run_id }}
+
+      - name: Test
+        run: |
+          TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
+          TILENAME=${{ inputs.setname }} make -n -f Makefile.tiles ${{ inputs.zip }}
+
+      - name: Setup Ortho4XP
+        run: make Ortho4XP
+
+      - name: Build
+        id: build
+        run: |
+          TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
+          TILENAME=${{ inputs.setname }} timeout 10s make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT" 
+          TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
+
+      - name: Show work
+        if: steps.build.outputs.done == "true"
+        run: |
+          echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
+          TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.info >>  $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '---' >> $GITHUB_STEP_SUMMARY
+
+  rerun:
+    needs: build
+
+    if: build.outputs.done == "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Re-Build
+        run:
+          exit 1
