@@ -42,6 +42,15 @@ jobs:
           python3 -m pip install -r requirements.txt
           make --version
       
+      - name: upload-cache
+        if: always()
+        uses: actions/cache@v3 
+        with:
+          path: ./Ortho4XP
+          key: ortho4xp-test-${{ github.run_id }}
+          restore-keys: |
+            ortho4xp-test-${{ github.run_id }}
+
       - name: Test
         run: |
           TILENAME=test make -f Makefile.tiles test_tile_list_chunks
