@@ -57,7 +57,7 @@ jobs:
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
 
       - name: Show work
-        if: steps.build.outputs.done == "true"
+        if: steps.build.outputs.done == 'true'
         run: |
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
@@ -68,8 +68,9 @@ jobs:
 
   rerun:
     needs: build
+    runs-on: ubuntu-22.04
 
-    if: build.outputs.done == "true"
+    if: build.outputs.done == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
