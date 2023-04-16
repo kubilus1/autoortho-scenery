@@ -62,8 +62,8 @@ jobs:
       - name: Build
         run: |
           TILENAME=test make -f Makefile.tiles test_tile_list_chunks
-          TILENAME=test make -f Makefile.tiles ${{ matrix.chunk }}
-          timeout 10s TILENAME=test make -f Makefile.tiles ${{ matrix.chunk }}.sha256
+          TILENAME=test timeout 10s make -f Makefile.tiles ${{ matrix.chunk }}
+          TILENAME=test make -f Makefile.tiles ${{ matrix.chunk }}.sha256
       
       - name: Show work
         run: |
