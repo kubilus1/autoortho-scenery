@@ -20,14 +20,14 @@ jobs:
           echo "chunks={\"chunk\":[$CHUNKS]}" >> $GITHUB_OUTPUT
 
 
-  build:
+  call-build:
     needs: ziplist
 
     strategy:
       matrix: ${{ fromJSON(needs.ziplist.outputs.chunks) }}
 
-    uses: ./.github/workflows/build-tiles.yml
     #uses: kubilus1/autoortho-scenery/.github/workflows/build-tiles.yml@timeouts
+    uses: ./.github/workflows/build-tiles.yml
     with:
       zip: ${{ matrix.chunk }}
       setname: test     
