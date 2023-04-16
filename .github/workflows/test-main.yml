@@ -26,7 +26,8 @@ jobs:
     strategy:
       matrix: ${{ fromJSON(needs.ziplist.outputs.chunks) }}
 
-    uses: kubilus1/autoortho-scenery/.github/workflows/build-tiles.yml@timeouts
+    uses: ./.github/workflows/build-tiles.yml
+    #uses: kubilus1/autoortho-scenery/.github/workflows/build-tiles.yml@timeouts
     with:
       zip: ${{ matrix.chunk }}
       setname: test     
