@@ -53,12 +53,13 @@ jobs:
         id: build
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
-          TILENAME=${{ inputs.setname }} timeout -k12s 10s make -f Makefile.tiles ${{ inputs.zip }}
+          TILENAME=${{ inputs.setname }} timeout -k12s 10s make -f Makefile.tiles ${{ inputs.zip }} || echo "done=false" > $GITHUB_OUTPUT
           #TILENAME=${{ inputs.setname }} timeout -k12s 10s make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT" 
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
+          
 
       - name: Show work
-        if: steps.build.outputs.done == 'true'
+        if: steps.build.outputs.done != 'false'
         run: |
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
@@ -71,7 +72,7 @@ jobs:
     needs: build
     runs-on: ubuntu-22.04
 
-    if: needs.build.outputs.done == 'true'
+    if: needs.build.outputs.done == 'false'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
