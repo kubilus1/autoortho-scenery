@@ -56,7 +56,7 @@ jobs:
           #TILENAME=${{ inputs.setname }} timeout 10s make -f Makefile.tiles ${{ inputs.zip }} || echo "done=false" > $GITHUB_OUTPUT
           TILENAME=${{ inputs.setname }} timeout -k12s 10s make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> $GITHUB_OUTPU" || echo "done=false" >> $GITHUB_OUTPUT
           #TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
-          echo ${{ setps.build.outputs.done }}
+          echo ${{ steps.build.outputs.done }}
           
 
       - name: Show work
