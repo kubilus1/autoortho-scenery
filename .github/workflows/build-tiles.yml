@@ -9,6 +9,10 @@ on:
       setname:
         required: true
         type: string
+    outputs:
+      done:
+        description: "Did this complete?"
+        value: ${{ jobs.build.outputs.done }}
 
 jobs:
   build:
