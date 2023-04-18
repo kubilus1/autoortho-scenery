@@ -54,7 +54,7 @@ jobs:
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
           #TILENAME=${{ inputs.setname }} timeout 10s make -f Makefile.tiles ${{ inputs.zip }} || echo "done=false" > $GITHUB_OUTPUT
-          TILENAME=${{ inputs.setname }} timeout -k12s 10s make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> $GITHUB_OUTPU" || echo "done=false" >> $GITHUB_OUTPUT
+          TILENAME=${{ inputs.setname }} timeout -k12s 10s make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> $GITHUB_OUTPUT || echo "done=false" >> $GITHUB_OUTPUT
           #TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo ${{ steps.build.outputs.done }}
           
