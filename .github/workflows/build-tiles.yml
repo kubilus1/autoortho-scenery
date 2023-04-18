@@ -56,7 +56,7 @@ jobs:
           #TILENAME=${{ inputs.setname }} timeout 10s make -f Makefile.tiles ${{ inputs.zip }} || echo "done=false" > $GITHUB_OUTPUT
           TILENAME=${{ inputs.setname }} timeout 10s make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> $GITHUB_OUTPUT || echo "done=false" >> $GITHUB_OUTPUT
           #TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
-          echo ${{ steps.build.outputs.done }}
+          echo "OUTPUT: ${{ steps.build.outputs.done }}"
           
 
       - name: Show work
@@ -69,15 +69,20 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo '---' >> $GITHUB_STEP_SUMMARY
 
+      - name: Test
+        if: steps.build.outputs.done == 'false'
+        run: |
+          echo "FAILURE!"
+
   rerun:
     needs: build
     runs-on: ubuntu-22.04
 
-    if: needs.build.outputs.done == 'false'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
+      if: needs.build.outputs.done == 'false'
       - name: Re-Build
         run:
           exit 1
