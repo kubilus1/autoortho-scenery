@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     outputs:
-      done: steps.build.outputs.done
+      done: ${{ steps.build.outputs.done }}
 
     steps:
       - name: Checkout
@@ -54,7 +54,7 @@ jobs:
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
           #TILENAME=${{ inputs.setname }} timeout 10s make -f Makefile.tiles ${{ inputs.zip }} || echo "done=false" > $GITHUB_OUTPUT
-          TILENAME=${{ inputs.setname }} timeout 10s make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> $GITHUB_OUTPUT || echo "done=false" >> $GITHUB_OUTPUT
+          TILENAME=${{ inputs.setname }} timeout 10s make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
           #TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo "OUTPUT: ${{ steps.build.outputs.done }}"
           
