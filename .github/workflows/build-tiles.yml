@@ -9,6 +9,9 @@ on:
       setname:
         required: true
         type: string
+      rerun:
+        type: string
+        default: "false"
     outputs:
       done:
         description: "Did this complete?"
@@ -79,7 +82,7 @@ jobs:
           echo "FAILURE!"
 
   rerun:
-    if: needs.build.outputs.done == 'false'
+    if: needs.build.outputs.done == 'false' && inputs.rerun == 'true'
     needs: build
     runs-on: ubuntu-22.04
 
