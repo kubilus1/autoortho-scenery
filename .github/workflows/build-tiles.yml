@@ -79,14 +79,17 @@ jobs:
           echo "FAILURE!"
 
   rerun:
+    if: needs.build.outputs.done == 'false'
     needs: build
     runs-on: ubuntu-22.04
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Re-Build
-        if: needs.build.outputs.done == 'false'
-        run:
-          exit 1
+    uses: ./.github/workflows/build-tiles.yml
+    with:
+      zip: ${{ inputs.zip }}
+      setname: ${{ inputs.setname }}
+# steps:
+#   - name: Checkout
+#     uses: actions/checkout@v3
+#   - name: Re-Build
+#     run:
+#       echo "foo"

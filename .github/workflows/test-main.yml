@@ -32,10 +32,12 @@ jobs:
       zip: ${{ matrix.chunk }}
       setname: test     
   
-  rerun-build:
-    if: ${{ needs.call-build.outputs.done == 'false' }}
-    needs: call-build
-    uses: ./.github/workflows/build-tiles.yml
-    with:
-      zip: ${{ matrix.chunk }}
-      setname: test     
+# rerun-build:
+#   strategy:
+#     matrix: ${{ fromJSON(needs.ziplist.outputs.chunks) }}
+#   if: ${{ needs.call-build.outputs.done == 'false' }}
+#   needs: call-build
+#   uses: ./.github/workflows/build-tiles.yml
+#   with:
+#     zip: ${{ matrix.chunk }}
+#     setname: test     
