@@ -9,9 +9,6 @@ on:
       setname:
         required: true
         type: string
-      rerun:
-        type: string
-        default: "false"
     outputs:
       done:
         description: "Did this complete?"
@@ -60,36 +57,84 @@ jobs:
         id: build
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
-          #TILENAME=${{ inputs.setname }} timeout 10s make -f Makefile.tiles ${{ inputs.zip }} || echo "done=false" > $GITHUB_OUTPUT
           TILENAME=${{ inputs.setname }} timeout 10s make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
-          #TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
-          echo "OUTPUT: ${{ steps.build.outputs.done }}"
           
-
       - name: Show work
         if: steps.build.outputs.done == 'true'
         run: |
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
+          echo "COMPLETED?: ${{ steps.build.outputs.done }}" >> $GITHUB_STEP_SUMMARY
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.info >>  $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo '---' >> $GITHUB_STEP_SUMMARY
 
-      - name: Test
+      - name: Failed
         if: steps.build.outputs.done == 'false'
         run: |
-          echo "FAILURE!"
+          echo "Not done!"
+
+      - name: Completed
+        if: steps.build.outputs.done == 'true'
+        run: |
+          echo "Done!"
 
   rerun:
-    if: needs.build.outputs.done == 'false' && inputs.rerun == 'true'
+    if: needs.build.outputs.done == 'false'
     needs: build
     runs-on: ubuntu-22.04
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    uses: ./.github/workflows/build-tiles.yml
-    with:
-      zip: ${{ inputs.zip }}
-      setname: ${{ inputs.setname }}
+      - name: Install reqs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip python3-tk zip libgeos-dev
+          python3 -m pip install -r requirements.txt
+          make --version
+      
+      - name: upload-cache
+        if: always()
+        uses: actions/cache@v3 
+        with:
+          path: ./Ortho4XP
+          key: ortho4xp-${{ inputs.zip }}-${{ github.run_id }}
+          restore-keys: |
+            ortho4xp-${{ inputs.zip }}-${{ github.run_id }}
+
+      - name: Setup Ortho4XP
+        run: make Ortho4XP
+
+      - name: ReBuild1
+        id: rebuild
+        run: |
+          TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
+          TILENAME=${{ inputs.setname }} timeout 300s make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          
+      - name: Show work
+        if: steps.rebuild.outputs.done == 'true'
+        run: |
+          echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
+          echo "COMPLETED?: ${{ steps.rebuild.outputs.done }}" >> $GITHUB_STEP_SUMMARY
+          TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.info >>  $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '---' >> $GITHUB_STEP_SUMMARY
+
+      - name: Failed
+        if: steps.build.outputs.done == 'false'
+        run: |
+          echo "Not done!"
+
+      - name: Completed
+        if: steps.build.outputs.done == 'true'
+        run: |
+          echo "Done!"
+
 # steps:
 #   - name: Checkout
 #     uses: actions/checkout@v3
