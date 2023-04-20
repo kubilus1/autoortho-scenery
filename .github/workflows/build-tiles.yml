@@ -36,14 +36,14 @@ jobs:
           python3 -m pip install -r requirements.txt
           make --version
       
-      - name: upload-cache
-        if: always()
-        uses: actions/cache@v3 
-        with:
-          path: ./Ortho4XP
-          key: ortho4xp-${{ inputs.zip }}-${{ github.run_id }}
-          restore-keys: |
-            ortho4xp-${{ inputs.zip }}-${{ github.run_id }}
+      # - name: upload-cache
+      #   if: always()
+      #   uses: actions/cache@v3 
+      #   with:
+      #     path: ./Ortho4XP
+      #     key: ortho4xp-${{ inputs.zip }}-${{ github.run_id }}
+      #     restore-keys: |
+      #       ortho4xp-${{ inputs.zip }}-${{ github.run_id }}
 
       - name: Test
         run: |
@@ -70,11 +70,17 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo '---' >> $GITHUB_STEP_SUMMARY
 
-      - name: Failed
+      - name: Incomplete
         if: steps.build.outputs.done == 'false'
-        run: |
-          echo "Not done!"
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.zip }}
+          path: ./Ortho4XP
+          retention-days: 5
 
+        #run: |
+         #echo "Not done!"
+        
       - name: Completed
         if: steps.build.outputs.done == 'true'
         run: |
@@ -96,14 +102,10 @@ jobs:
           python3 -m pip install -r requirements.txt
           make --version
       
-      - name: upload-cache
-        if: always()
-        uses: actions/cache@v3 
+      - name: Restore artifacts
+        uses: actions/download-artifact@v3
         with:
-          path: ./Ortho4XP
-          key: ortho4xp-${{ inputs.zip }}-${{ github.run_id }}
-          restore-keys: |
-            ortho4xp-${{ inputs.zip }}-${{ github.run_id }}
+          name: ${{ inputs.zip }}
 
       - name: Setup Ortho4XP
         run: make Ortho4XP
