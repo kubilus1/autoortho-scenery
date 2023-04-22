@@ -16,9 +16,9 @@ on:
       zl:
         type: string
         default: 16
-      relname:
-        type: string
-        default: ''
+      #relname:
+      #  type: string
+      #  default: ''
 
 
 jobs:
@@ -49,11 +49,11 @@ jobs:
     with:
       zip: ${{ matrix.chunk }}
       setname: ${{ inputs.tileset }}
-      relname: ${{ inputs.relname }}     
+      #relname: ${{ inputs.relname }}     
 
 
   info:
-    #if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/')
     needs: call-build
 
     environment: release
