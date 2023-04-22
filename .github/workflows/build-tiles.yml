@@ -9,6 +9,9 @@ on:
       setname:
         required: true
         type: string
+      relname:
+        type: string
+        default: ""
     outputs:
       done:
         description: "Did this complete?"
@@ -70,21 +73,29 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo '---' >> $GITHUB_STEP_SUMMARY
 
+      - name: Tar
+        if: steps.build.outputs.done == 'false'
+        run: |
+          tar -czvf o4xp.tgz ./Ortho4XP
+
       - name: Incomplete
         if: steps.build.outputs.done == 'false'
         uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.zip }}
-          path: ./Ortho4XP
-          retention-days: 5
+          path: ./o4xp.tgz
+          retention-days: 2
 
         #run: |
          #echo "Not done!"
         
-      - name: Completed
-        if: steps.build.outputs.done == 'true'
-        run: |
-          echo "Done!"
+      - name: Release
+        if: steps.build.outputs.done == 'true' && inputs.relname != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ inputs.tileset }}_info.json
+          name: ${{ inputs.relname }}
+
 
   rerun:
     if: needs.build.outputs.done == 'false'
@@ -107,8 +118,10 @@ jobs:
         with:
           name: ${{ inputs.zip }}
 
-      - name: Setup Ortho4XP
-        run: make Ortho4XP
+      - name: Untar
+        run: |
+          tar -xvzf o4xp.tgz
+          ls
 
       - name: ReBuild1
         id: rebuild
@@ -132,14 +145,9 @@ jobs:
         run: |
           echo "Not done!"
 
-      - name: Completed
-        if: steps.build.outputs.done == 'true'
-        run: |
-          echo "Done!"
-
-# steps:
-#   - name: Checkout
-#     uses: actions/checkout@v3
-#   - name: Re-Build
-#     run:
-#       echo "foo"
+      - name: Release
+        if: steps.build.outputs.done == 'true' && inputs.relname != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ inputs.tileset }}_info.json
+          name: ${{ inputs.relname }}
