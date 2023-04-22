@@ -20,46 +20,13 @@ jobs:
           echo "chunks={\"chunk\":[$CHUNKS]}" >> $GITHUB_OUTPUT
 
 
-  build:
+  call-build:
     needs: ziplist
 
     strategy:
       matrix: ${{ fromJSON(needs.ziplist.outputs.chunks) }}
 
-    env:
-      DEBIAN_FRONTEND: noninteractive
-      TZ: America/NewYork
-
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install reqs
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip python3-tk zip libgeos-dev
-          python3 -m pip install -r requirements.txt
-          make --version
-      
-      - name: Test
-        run: |
-          TILENAME=test make -f Makefile.tiles test_tile_list_chunks
-          TILENAME=test make -n -f Makefile.tiles ${{ matrix.chunk }}
-
-      - name: Setup Ortho4XP
-        run: make Ortho4XP
-
-      - name: Build
-        run: |
-          TILENAME=test make -f Makefile.tiles test_tile_list_chunks
-          TILENAME=test make -f Makefile.tiles ${{ matrix.chunk }}
-      
-      - name: Show work
-        run: |
-          echo '### ${{ inputs.tileset }} : ${{ matrix.chunk }}' >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          #unzip -l ${{ matrix.chunk }} *.dsf >> $GITHUB_STEP_SUMMARY
-          TILENAME=test make -f Makefile.tiles ${{ matrix.chunk }}.info >>  $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo '---' >> $GITHUB_STEP_SUMMARY
+    uses: ./.github/workflows/build-tiles.yml
+    with:
+      zip: ${{ matrix.chunk }}
+      setname: test     
