@@ -39,15 +39,6 @@ jobs:
           python3 -m pip install -r requirements.txt
           make --version
       
-      # - name: upload-cache
-      #   if: always()
-      #   uses: actions/cache@v3 
-      #   with:
-      #     path: ./Ortho4XP
-      #     key: ortho4xp-${{ inputs.zip }}-${{ github.run_id }}
-      #     restore-keys: |
-      #       ortho4xp-${{ inputs.zip }}-${{ github.run_id }}
-
       - name: Test
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
@@ -60,7 +51,7 @@ jobs:
         id: build
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
-          TILENAME=${{ inputs.setname }} timeout 10s make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.setname }} timeout 330m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
           
       - name: Show work
         if: steps.build.outputs.done == 'true'
@@ -72,6 +63,13 @@ jobs:
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.info >>  $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo '---' >> $GITHUB_STEP_SUMMARY
+
+      - name: Release
+        if: steps.build.outputs.done == 'true' && inputs.relname != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ inputs.tileset }}_info.json
+          name: ${{ inputs.relname }}
 
       - name: Tar
         if: steps.build.outputs.done == 'false'
@@ -85,17 +83,6 @@ jobs:
           name: ${{ inputs.zip }}
           path: ./o4xp.tgz
           retention-days: 2
-
-        #run: |
-         #echo "Not done!"
-        
-      - name: Release
-        if: steps.build.outputs.done == 'true' && inputs.relname != ''
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ${{ inputs.tileset }}_info.json
-          name: ${{ inputs.relname }}
-
 
   rerun:
     if: needs.build.outputs.done == 'false'
@@ -127,7 +114,7 @@ jobs:
         id: rebuild
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
-          TILENAME=${{ inputs.setname }} timeout 300s make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.setname }} timeout 330m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
           
       - name: Show work
         if: steps.rebuild.outputs.done == 'true'
@@ -140,10 +127,68 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo '---' >> $GITHUB_STEP_SUMMARY
 
-      - name: Failed
+      - name: Release
+        if: steps.build.outputs.done == 'true' && inputs.relname != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ inputs.tileset }}_info.json
+          name: ${{ inputs.relname }}
+
+      - name: Tar
         if: steps.build.outputs.done == 'false'
         run: |
-          echo "Not done!"
+          tar -czvf o4xp.tgz ./Ortho4XP
+
+      - name: Incomplete
+        if: steps.build.outputs.done == 'false'
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.zip }}
+          path: ./o4xp.tgz
+          retention-days: 2
+
+  rerun2:
+    if: needs.build.outputs.done == 'false'
+    needs: rerun
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install reqs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip python3-tk zip libgeos-dev
+          python3 -m pip install -r requirements.txt
+          make --version
+      
+      - name: Restore artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.zip }}
+
+      - name: Untar
+        run: |
+          tar -xvzf o4xp.tgz
+          ls
+
+      - name: ReBuild2
+        id: rebuild
+        run: |
+          TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
+          TILENAME=${{ inputs.setname }} timeout 330m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          
+      - name: Show work
+        if: steps.rebuild.outputs.done == 'true'
+        run: |
+          echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
+          echo "COMPLETED?: ${{ steps.rebuild.outputs.done }}" >> $GITHUB_STEP_SUMMARY
+          TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.zip }}.info >>  $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '---' >> $GITHUB_STEP_SUMMARY
 
       - name: Release
         if: steps.build.outputs.done == 'true' && inputs.relname != ''
@@ -151,3 +196,9 @@ jobs:
         with:
           files: ${{ inputs.tileset }}_info.json
           name: ${{ inputs.relname }}
+
+      - name: Failure
+        if: steps.build.outputs.done == 'false'
+        run: |
+          exit 1 
+
