@@ -1,7 +1,6 @@
 name: Run one
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       tileset:

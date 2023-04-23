@@ -56,6 +56,7 @@ jobs:
       - name: Show work
         if: steps.build.outputs.done == 'true'
         run: |
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
@@ -68,7 +69,9 @@ jobs:
         if: steps.build.outputs.done == 'true' && inputs.relname != ''
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ inputs.zip }}
+          files: |
+            ${{ inputs.zip }}
+            ${{ inputs.zip }}.sha256
           tag_name: ${{ inputs.relname }}
 
       - name: Tar
@@ -122,6 +125,7 @@ jobs:
       - name: Show work
         if: steps.rebuild.outputs.done == 'true'
         run: |
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
@@ -134,7 +138,9 @@ jobs:
         if: steps.rebuild.outputs.done == 'true' && inputs.relname != ''
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ inputs.zip }}
+          files: |
+            ${{ inputs.zip }}
+            ${{ inputs.zip }}.sha256
           tag_name: ${{ inputs.relname }}
 
       - name: Tar
@@ -155,6 +161,9 @@ jobs:
     needs: rerun
     runs-on: ubuntu-22.04
     
+    outputs:
+      done: ${{ steps.rebuild.outputs.done }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -185,6 +194,7 @@ jobs:
       - name: Show work
         if: steps.rebuild.outputs.done == 'true'
         run: |
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
@@ -197,11 +207,12 @@ jobs:
         if: steps.rebuild.outputs.done == 'true' && inputs.relname != ''
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ inputs.zip }}
+          files: |
+            ${{ inputs.zip }}
+            ${{ inputs.zip }}.sha256
           tag_name: ${{ inputs.relname }}
 
       - name: Failure
         if: steps.rebuild.outputs.done == 'false'
         run: |
           exit 1 
-
