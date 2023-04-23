@@ -1,0 +1,38 @@
+name: Test
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      tileset:
+        type: choice
+        options:
+          - asi
+          - afr
+          - sa
+          - na
+          - aus_pac
+          - eur
+          - test  
+      zl:
+        type: string
+        default: 16
+      relname:
+        type: string
+        default: ''
+      zip:
+        type: string
+        required: true
+
+jobs:
+  call-build:
+    needs: ziplist
+
+    strategy:
+      matrix: ${{ fromJSON(needs.ziplist.outputs.chunks) }}
+
+    uses: ./.github/workflows/build-tiles.yml
+    with:
+      zip: ${{ inputs.zip }}
+      setname: ${{ inputs.tileset }}
+      relname: ${{ inputs.relname }} 
