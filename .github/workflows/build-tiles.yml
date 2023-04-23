@@ -155,6 +155,9 @@ jobs:
     needs: rerun
     runs-on: ubuntu-22.04
     
+    outputs:
+      done: ${{ steps.rebuild.outputs.done }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -205,3 +208,19 @@ jobs:
         run: |
           exit 1 
 
+
+  release:
+    if: ( needs.rebuild.outputs.done == 'true' || needs.rebuild.outputs.done == 'true' || needs.rebuild2.outputs.done == 'true' )
+    needs: 
+      - build
+      - rerun
+      - rerun2
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: yep
+        run: |
+          echo "mmmm hmm"
