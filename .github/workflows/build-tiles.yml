@@ -68,7 +68,7 @@ jobs:
         if: steps.build.outputs.done == 'true' && inputs.relname != ''
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ inputs.tileset }}_info.json
+          files: ${{ inputs.zip }}
           tag_name: ${{ inputs.relname }}
 
       - name: Tar
@@ -131,7 +131,7 @@ jobs:
         if: steps.build.outputs.done == 'true' && inputs.relname != ''
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ inputs.tileset }}_info.json
+          files: ${{ inputs.zip }}
           tag_name: ${{ inputs.relname }}
 
       - name: Tar
