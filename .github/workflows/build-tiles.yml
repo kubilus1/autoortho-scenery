@@ -89,6 +89,9 @@ jobs:
     needs: build
     runs-on: ubuntu-22.04
     
+    outputs:
+      done: ${{ steps.rebuild.outputs.done }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -128,19 +131,19 @@ jobs:
           echo '---' >> $GITHUB_STEP_SUMMARY
 
       - name: Release
-        if: steps.build.outputs.done == 'true' && inputs.relname != ''
+        if: steps.rebuild.outputs.done == 'true' && inputs.relname != ''
         uses: softprops/action-gh-release@v1
         with:
           files: ${{ inputs.zip }}
           tag_name: ${{ inputs.relname }}
 
       - name: Tar
-        if: steps.build.outputs.done == 'false'
+        if: steps.rebuild.outputs.done == 'false'
         run: |
           tar -czvf o4xp.tgz ./Ortho4XP
 
       - name: Incomplete
-        if: steps.build.outputs.done == 'false'
+        if: steps.rebuild.outputs.done == 'false'
         uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.zip }}
@@ -148,7 +151,7 @@ jobs:
           retention-days: 2
 
   rerun2:
-    if: needs.build.outputs.done == 'false'
+    if: needs.rebuild.outputs.done == 'false'
     needs: rerun
     runs-on: ubuntu-22.04
     
@@ -191,14 +194,14 @@ jobs:
           echo '---' >> $GITHUB_STEP_SUMMARY
 
       - name: Release
-        if: steps.build.outputs.done == 'true' && inputs.relname != ''
+        if: steps.rebuild.outputs.done == 'true' && inputs.relname != ''
         uses: softprops/action-gh-release@v1
         with:
           files: ${{ inputs.zip }}
           tag_name: ${{ inputs.relname }}
 
       - name: Failure
-        if: steps.build.outputs.done == 'false'
+        if: steps.rebuild.outputs.done == 'false'
         run: |
           exit 1 
 
