@@ -56,6 +56,7 @@ jobs:
       - name: Show work
         if: steps.build.outputs.done == 'true'
         run: |
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
@@ -122,6 +123,7 @@ jobs:
       - name: Show work
         if: steps.rebuild.outputs.done == 'true'
         run: |
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
@@ -188,6 +190,7 @@ jobs:
       - name: Show work
         if: steps.rebuild.outputs.done == 'true'
         run: |
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
@@ -210,7 +213,7 @@ jobs:
 
 
   release:
-    if: ( needs.rebuild.outputs.done == 'true' || needs.rebuild.outputs.done == 'true' || needs.rebuild2.outputs.done == 'true' )
+    if: ( needs.build.outputs.done == 'true' || needs.rebuild.outputs.done == 'true' || needs.rebuild2.outputs.done == 'true' )
     needs: 
       - build
       - rerun
