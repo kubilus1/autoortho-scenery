@@ -20,19 +20,14 @@ on:
       relname:
         type: string
         default: ''
-      zip:
+      zipnum:
         type: string
         required: true
 
 jobs:
   call-build:
-    needs: ziplist
-
-    strategy:
-      matrix: ${{ fromJSON(needs.ziplist.outputs.chunks) }}
-
     uses: ./.github/workflows/build-tiles.yml
     with:
-      zip: ${{ inputs.zip }}
+      zip: z_${{ inputs.tileset }}_${{ inputs.zipnum }}.zip
       setname: ${{ inputs.tileset }}
       relname: ${{ inputs.relname }} 
