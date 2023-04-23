@@ -69,7 +69,9 @@ jobs:
         if: steps.build.outputs.done == 'true' && inputs.relname != ''
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ inputs.zip }}
+          files: |
+            ${{ inputs.zip }}
+            ${{ inputs.zip }}.sha256
           tag_name: ${{ inputs.relname }}
 
       - name: Tar
@@ -136,7 +138,9 @@ jobs:
         if: steps.rebuild.outputs.done == 'true' && inputs.relname != ''
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ inputs.zip }}
+          files: |
+            ${{ inputs.zip }}
+            ${{ inputs.zip }}.sha256
           tag_name: ${{ inputs.relname }}
 
       - name: Tar
@@ -203,27 +207,12 @@ jobs:
         if: steps.rebuild.outputs.done == 'true' && inputs.relname != ''
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ inputs.zip }}
+          files: |
+            ${{ inputs.zip }}
+            ${{ inputs.zip }}.sha256
           tag_name: ${{ inputs.relname }}
 
       - name: Failure
         if: steps.rebuild.outputs.done == 'false'
         run: |
           exit 1 
-
-
-  release:
-    if: ( needs.build.outputs.done == 'true' || needs.rebuild.outputs.done == 'true' || needs.rebuild2.outputs.done == 'true' )
-    needs: 
-      - build
-      - rerun
-      - rerun2
-    runs-on: ubuntu-22.04
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: yep
-        run: |
-          echo "mmmm hmm"
