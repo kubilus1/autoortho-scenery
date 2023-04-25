@@ -1,4 +1,4 @@
-SPLITSIZE?=150
+SPLITSIZE?=125
 SHELL=/bin/bash
 ZL?=16
 
