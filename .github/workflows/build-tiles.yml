@@ -51,7 +51,7 @@ jobs:
         id: build
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
-          TILENAME=${{ inputs.setname }} timeout 330m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.setname }} timeout 300m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
           
       - name: Show work
         if: steps.build.outputs.done == 'true'
@@ -120,7 +120,7 @@ jobs:
         id: rebuild
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
-          TILENAME=${{ inputs.setname }} timeout 330m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.setname }} timeout 300m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
           
       - name: Show work
         if: steps.rebuild.outputs.done == 'true'
@@ -189,7 +189,7 @@ jobs:
         id: rebuild
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
-          TILENAME=${{ inputs.setname }} timeout 330m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.setname }} timeout 300m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
           
       - name: Show work
         if: steps.rebuild.outputs.done == 'true'
