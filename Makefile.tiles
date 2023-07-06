@@ -1,30 +1,52 @@
+# Requires Github CLI (gh) command to facilitate authenticated requests to the API
+#
+# Quick start:
+# make -f Makefile.tiles clean 
+# make -f Makefile.tiles test_tile_list_chunks
+# make -f Makefile.tiles -j $(nproc --ignore=2)
+
+# @todo: make release in kubilus/autoortho-scenery, see ./bin/prepareAssetsElevationData
+ELEV_RELEASE_JSON_ENDPOINT?=repos/jonaseberle/autoortho-scenery/releases/tags/elevation-v0.0.1
 SPLITSIZE?=125
 SHELL=/bin/bash
 ZL?=16
 
 TILENAME?=test
 
-TILES:=$(addprefix z_$(TILENAME)_, $(shell ls $(TILENAME)_tile_list.* | awk -F. '{ print $$2 }') ) 
+TILES:=$(addprefix z_$(TILENAME)_, $(shell ls $(TILENAME)_tile_list.* 2>/dev/null | awk -F. '{ print $$2 }') ) 
 TILE_ZIPS=$(addsuffix .zip, $(TILES))
 
 ZIPS=$(TILE_ZIPS)
 
+# paranthesis to use in shell commands
+# make chokes on () in shell commands
+OP:=(
+CP:=)
+
 # Get the tiles listed in each list file
 .SECONDEXPANSION:
-TILE_FILES = $(addsuffix .dsf, $(addprefix Ortho4XP/Tiles/*/*/*/, $(basename $(shell cat $(TILENAME)_tile_list.$* ) ) ) )
-#TILE_FILES = $(basename $(shell cat $(TILENAME)_tile_list.$* ) )
-
+TILE_FILES = $(addsuffix .dsf, $(addprefix Ortho4XP/Tiles/*/*/*/, $(basename $(shell cat $(TILENAME)_tile_list.$* 2>/dev/null ) ) ) )
 
 all: $(ZIPS)
 
+# creates directories
+%/:
+	@echo [$@]
+	@mkdir -p $@
+
+#
+# Work on tile lists
+#
+
 z_$(TILENAME)_%: $(TILENAME)_tile_list.% $${TILE_FILES}
-	@echo "Going to do some $@"
+	@echo [$@]
 	@echo "Expected tile len:"
 	@cat $< | wc -l
 	@echo "Actual tile len:"
 	@unzip -l $@.zip *.dsf | grep dsf | wc -l
 	
 z_$(TILENAME)_%.zip.info: $(TILENAME)_tile_list.%
+	@echo [$@]
 	@echo "-----------------------------------"
 	@echo "Post processing info:"
 	comm --total -3  <( unzip -l $(basename $@) *.dsf | awk -F/ '/.*\.dsf/ { print $$4 }' | sort ) <( cat $< | sort )
@@ -34,23 +56,67 @@ z_$(TILENAME)_%.zip.info: $(TILENAME)_tile_list.%
 	echo "Expected tile len: $$EXPECTED"; \
 	echo "Actual tile len: $$ACTUAL"; \
 	[ $$EXPECTED -eq $$ACTUAL ]
+
 #
 # Ortho4XP setup
 #
 
 ortho4xp.diff:
+	@echo [$@]
 	cd Ortho4XP && git diff > ../ortho4xp.diff
 
 Ortho4XP:
+	@echo [$@]
 	git clone --depth=1 https://github.com/oscarpilote/Ortho4XP.git
 	cd $@ && patch -p1 -u < ../ortho4xp.diff
 	cp extract_overlay.py $@/.
 	cp Ortho4XP.cfg $@/.
 	mkdir $@/tmp
+	@echo "Setting up symlinks in order to not care about Ortho4XP's expected directory structure in ./Elevation_data..."
+	mkdir -p $@/Elevation_data && cd $@/Elevation_data \
+		&& bash -c 'for lat in {-9..9}; do for lon in {-18..18}; do ln -snfr ./ "./$$(printf "%+d0%+03d0" "$$lat" "$$lon")"; done; done'
 
+#
+# Custom tile elevation
+#
+
+# generates the targets var/run/neighboursOfTile_%.elevation with surrounding tiles' elevations 
+# as prerequisites (takes a little while, 360*180 rules):
+var/run/Makefile.elevationRules: | $$(@D)/
+	@echo [$@]
+	@bin/genMakefileElevationRules > $@
+include var/run/Makefile.elevationRules
+
+var/run/tile_%.elevation: var/cache/elevation/elevation_%.zip Ortho4XP | $$(@D)/
+	@echo [$@]
+	@# unzip if file not empty, but fail on unzip error
+	@if [ -s "var/cache/elevation/elevation_$*.zip" ]; then \
+		unzip -o -d Ortho4XP/Elevation_data/ var/cache/elevation/elevation_$*.zip; \
+	fi
+	@touch $@
+
+var/run/elevationRelease.json: | $$(@D)/
+	@echo [$@]
+	gh api $(ELEV_RELEASE_JSON_ENDPOINT) --paginate > $@
+
+var/cache/elevation/elevation_%.zip: var/run/elevationRelease.json | $$(@D)/
+	@echo [$@]
+	@url=$$(jq -r '.assets[] | select$(OP).name == "elevation_$*.zip"$(CP) .browser_download_url' \
+			var/run/elevationRelease.json) \
+		&& [ -n "$$url" ] \
+		&& ( cd $(@D) && wget --continue --quiet "$$url" ) \
+		&& echo "[$@] downloaded $$url" \
+		|| ( echo "[$@] no custom elevation data for $* found"; true )
+	@# always create the file
+	@touch $@
+
+#
+# Split tile list
+#
 
 #$(TILENAME)_tile_list.%: $(TILENAME)_tile_list_chunks
 $(TILENAME)_tile_list_chunks: $(TILENAME)_tile_list
+	@echo [$@]
 	split $< -d -l $(SPLITSIZE) $<.
 	
 
@@ -63,22 +129,24 @@ $(TILENAME)_tile_list_chunks: $(TILENAME)_tile_list
 #%.dsf: Ortho4XP/Tiles/zOrtho4XP_%/.done
 #	echo $<
 #Ortho4XP/Tiles/zOrtho4XP_%/.done: Ortho4XP 
-Ortho4XP/Tiles/*/*/*/%.dsf: Ortho4XP
-	@echo "Make tile $*"	
+Ortho4XP/Tiles/*/*/*/%.dsf: Ortho4XP var/run/neighboursOfTile_%.elevation
+	@echo [$@]
+	@echo "Make tile $*"
 	@echo "Setup per tile config, if possible"
 	mkdir -p Ortho4XP/Tiles/zOrtho4XP_$*
-	-cp Ortho4XP_$*.cfg Ortho4XP/Tiles/zOrtho4XP_$*/.
+	-cp Ortho4XP_$*.cfg Ortho4XP/Tiles/zOrtho4XP_$*/. 2>/dev/null
 	@echo "Make tile $(@)" 
 	set -e;\
 	export COORDS=$$(echo $(@) | sed -e 's/.*\/\([-+][0-9]\+\)\([-+][0-9]\+\).dsf/\1 \2/g');\
 	echo $$COORDS; \
- 	cd $< && python3 Ortho4XP_v130.py $$COORDS BI $(ZL) || ( echo "ERROR DETECTED! Retry tile $@ with noroads config."; cp $(CURDIR)/Ortho4XP_noroads.cfg $(CURDIR)/Ortho4XP/Tiles/zOrtho4XP_$*/Ortho4XP_$*.cfg && python3 Ortho4XP_v130.py $$COORDS BI $(ZL) )
+	cd Ortho4XP && python3 Ortho4XP_v130.py $$COORDS BI $(ZL) || ( echo "ERROR DETECTED! Retry tile $@ with noroads config."; cp $(CURDIR)/Ortho4XP_noroads.cfg $(CURDIR)/Ortho4XP/Tiles/zOrtho4XP_$*/Ortho4XP_$*.cfg && python3 Ortho4XP_v130.py $$COORDS BI $(ZL) )
 	#touch $@
 
 .SECONDARY: $(TILE_FILES) 
 
 # Static pattern rule for the zip files
 $(ZIPS): z_%.zip: z_%
+	@echo [$@]
 	mkdir -p $<
 	cp -r Ortho4XP/Tiles/zOrtho4XP_*/'Earth nav data' $</.
 	cp -r Ortho4XP/Tiles/zOrtho4XP_*/terrain $</.
@@ -86,10 +154,19 @@ $(ZIPS): z_%.zip: z_%
 	zip -r $@ $<
 	
 %.sha256: %		
+	@echo [$@]
 	sha256sum $< > $@
 
 clean:
+	@echo [$@]
 	-rm -rf Ortho4XP
-	-rm $(ZIPS)
-	-rm -rf z_$(TILENAME)
-	-rm $(TILENAME)_tile_list.*
+	-rm -rf var/run
+	-rm -f $(ZIPS)
+	-rm -rf z_$(TILENAME)*
+	-rm -f $(TILENAME)_tile_list.*
+
+distclean: clean
+	@echo [$@]
+	-rm -rf var
+	-rm -f z_*
+	-rm -f *_tile_list.*

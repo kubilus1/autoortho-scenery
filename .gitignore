@@ -2,3 +2,5 @@
 *.swp
 Ortho4XP
 *_tile_list.*
+/var/
+/.venv/
