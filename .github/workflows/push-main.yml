@@ -24,6 +24,10 @@ on:
 jobs:
   ziplist:
     runs-on: ubuntu-22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: America/NewYork
+      GH_TOKEN: ${{ github.token }}
     outputs:
       chunks: ${{ steps.chunks.outputs.chunks }}
     steps:
@@ -61,6 +65,10 @@ jobs:
     environment: release
 
     runs-on: ubuntu-22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: America/NewYork
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3

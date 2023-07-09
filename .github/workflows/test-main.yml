@@ -6,6 +6,10 @@ on:
 jobs:
   ziplist:
     runs-on: ubuntu-22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: America/NewYork
+      GH_TOKEN: ${{ github.token }}
     outputs:
       chunks: ${{ steps.chunks.outputs.chunks }}
     steps:

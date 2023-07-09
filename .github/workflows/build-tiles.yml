@@ -92,6 +92,10 @@ jobs:
     if: needs.build.outputs.done == 'false'
     needs: build
     runs-on: ubuntu-22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: America/NewYork
+      GH_TOKEN: ${{ github.token }}
     
     outputs:
       done: ${{ steps.rebuild.outputs.done }}
@@ -161,6 +165,10 @@ jobs:
     if: needs.rebuild.outputs.done == 'false'
     needs: rerun
     runs-on: ubuntu-22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: America/NewYork
+      GH_TOKEN: ${{ github.token }}
     
     outputs:
       done: ${{ steps.rebuild.outputs.done }}
