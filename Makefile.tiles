@@ -40,10 +40,6 @@ all: $(ZIPS)
 
 z_$(TILENAME)_%: $(TILENAME)_tile_list.% $${TILE_FILES}
 	@echo [$@]
-	@echo "Expected tile len:"
-	@cat $< | wc -l
-	@echo "Actual tile len:"
-	@unzip -l $@.zip *.dsf | grep dsf | wc -l
 	
 z_$(TILENAME)_%.zip.info: z_$(TILENAME)_%.zip
 	@echo [$@]
