@@ -53,11 +53,11 @@ jobs:
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
           TILENAME=${{ inputs.setname }} timeout 300m make -f Makefile.tiles ${{ inputs.zip }} -j $(nproc) && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           
       - name: Show work
         if: steps.build.outputs.done == 'true'
         run: |
-          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
@@ -122,11 +122,11 @@ jobs:
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
           TILENAME=${{ inputs.setname }} timeout 300m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           
       - name: Show work
         if: steps.rebuild.outputs.done == 'true'
         run: |
-          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
@@ -191,11 +191,11 @@ jobs:
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
           TILENAME=${{ inputs.setname }} timeout 300m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           
       - name: Show work
         if: steps.rebuild.outputs.done == 'true'
         run: |
-          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
