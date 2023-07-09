@@ -97,7 +97,7 @@ var/run/tile_%.elevation: var/cache/elevation/elevation_%.zip Ortho4XP | $$(@D)/
 
 var/run/elevationRelease.json: | $$(@D)/
 	@echo [$@]
-	gh api $(ELEV_RELEASE_JSON_ENDPOINT) --paginate > $@
+	@gh api $(ELEV_RELEASE_JSON_ENDPOINT) --paginate > $@
 
 var/cache/elevation/elevation_%.zip: var/run/elevationRelease.json | $$(@D)/
 	@echo [$@]
