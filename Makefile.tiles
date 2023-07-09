@@ -45,16 +45,16 @@ z_$(TILENAME)_%: $(TILENAME)_tile_list.% $${TILE_FILES}
 	@echo "Actual tile len:"
 	@unzip -l $@.zip *.dsf | grep dsf | wc -l
 	
-z_$(TILENAME)_%.zip.info: $(TILENAME)_tile_list.%
+z_$(TILENAME)_%.zip.info: z_$(TILENAME)_%.zip
 	@echo [$@]
 	@echo "-----------------------------------"
 	@echo "Post processing info:"
-	comm --total -3  <( unzip -l $(basename $@) *.dsf | awk -F/ '/.*\.dsf/ { print $$4 }' | sort ) <( cat $< | sort )
+	@comm --total -3  <( unzip -l $(basename $@) *.dsf | awk -F/ '/.*\.dsf/ { print $$4 }' | sort ) <( cat $(TILENAME)_tile_list.$* | sort )
 	@echo "-----------------------------------"
-	export EXPECTED=$$(cat $< | wc -l); \
-	export ACTUAL=$$(unzip -l $(basename $@) *.dsf | grep dsf | wc -l); \
-	echo "Expected tile len: $$EXPECTED"; \
-	echo "Actual tile len: $$ACTUAL"; \
+	@export EXPECTED=$$(cat $(TILENAME)_tile_list.$* | wc -l); \
+		export ACTUAL=$$(unzip -l $(basename $@) *.dsf | grep dsf | wc -l); \
+		echo "Expected tile len: $$EXPECTED"; \
+		echo "Actual tile len: $$ACTUAL"; \
 	[ $$EXPECTED -eq $$ACTUAL ]
 
 #
