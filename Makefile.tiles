@@ -86,9 +86,8 @@ var/run/tile_%.elevation: var/cache/elevation/elevation_%.zip Ortho4XP | $$(@D)/
 	@# Unzips if file not empty, but fails on unzip error.
 	@# Ignores the .zip if empty
 	@if [ -s "var/cache/elevation/elevation_$*.zip" ]; then \
-		printf "[$@] unzipping custom elevation: "; \
-		unzip -o -d Ortho4XP/Elevation_data/ var/cache/elevation/elevation_$*.zip | tr "\n" " | "; \
-		echo; \
+		printf "[$@] unzipping custom elevation: %s\n" \
+			"$$(unzip -o -d Ortho4XP/Elevation_data/ var/cache/elevation/elevation_$*.zip | tr "\n" " | ")"; \
 	else \
 		echo "[$@] no custom elevation for this tile"; \
 	fi
@@ -118,20 +117,15 @@ var/cache/elevation/elevation_%.zip: var/run/elevationRelease.json | $$(@D)/
 #
 
 #$(TILENAME)_tile_list.%: $(TILENAME)_tile_list_chunks
+
 $(TILENAME)_tile_list_chunks: $(TILENAME)_tile_list
 	@echo "[$@]"
 	split $< -d -l $(SPLITSIZE) $<.
-	
 
 #
 # Tile pack setup
 #
 
-#Ortho4XP/Tiles/zOrtho4XP_%: Ortho4XP/Tiles/zOrtho4XP_%/.done
-#.PHONY: %.dsf
-#%.dsf: Ortho4XP/Tiles/zOrtho4XP_%/.done
-#	echo $<
-#Ortho4XP/Tiles/zOrtho4XP_%/.done: Ortho4XP 
 Ortho4XP/Tiles/*/*/*/%.dsf: Ortho4XP var/run/neighboursOfTile_%.elevation
 	@echo [$@]
 	@echo "Make tile $*"
@@ -149,7 +143,15 @@ Ortho4XP/Tiles/*/*/*/%.dsf: Ortho4XP var/run/neighboursOfTile_%.elevation
 			echo "ERROR DETECTED! Retry tile $@ with noroads config."; \
 			cp $(CURDIR)/Ortho4XP_noroads.cfg $(CURDIR)/Ortho4XP/Tiles/zOrtho4XP_$*/Ortho4XP_$*.cfg \
 			&& python3 Ortho4XP_v130.py $$COORDS BI $(ZL) 2>&1 | grep -v 'is deprecated' \
-		)
+		);
+
+var/run/z_aosingle_%: Ortho4XP/Tiles/*/*/*/%.dsf
+	@echo "[$@]"
+	@cp -r Ortho4XP/Tiles/zOrtho4XP_$*/ var/run/z_aosingle_$*
+
+z_aosingle_%.zip: var/run/z_aosingle_%
+	@echo "[$@]"
+	@cd var/run/ && zip -r ../../$@ z_aosingle_$*/
 
 .SECONDARY: $(TILE_FILES) 
 
@@ -172,6 +174,7 @@ clean:
 	-rm -rf var/run
 	-rm -f $(ZIPS)
 	-rm -rf z_$(TILENAME)*
+	-rm -rf z_aosingle_*
 	-rm -f $(TILENAME)_tile_list.*
 
 distclean: clean

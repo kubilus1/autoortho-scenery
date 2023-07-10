@@ -1,4 +1,4 @@
-name: Test
+name: Build one .zip (and upload) (sub-workflow)
 
 on:
   workflow_call:
