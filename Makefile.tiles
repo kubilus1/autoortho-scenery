@@ -31,7 +31,6 @@ all: $(ZIPS)
 
 # creates directories
 %/:
-	@echo [$@]
 	@mkdir -p $@
 
 #
@@ -39,10 +38,10 @@ all: $(ZIPS)
 #
 
 z_$(TILENAME)_%: $(TILENAME)_tile_list.% $${TILE_FILES}
-	@echo [$@]
+	@echo "[$@]"
 	
 z_$(TILENAME)_%.zip.info: z_$(TILENAME)_%.zip
-	@echo [$@]
+	@echo "[$@]"
 	@echo "-----------------------------------"
 	@echo "Post processing info:"
 	@comm --total -3  <( unzip -l $(basename $@) *.dsf | awk -F/ '/.*\.dsf/ { print $$4 }' | sort ) <( cat $(TILENAME)_tile_list.$* | sort )
@@ -58,11 +57,11 @@ z_$(TILENAME)_%.zip.info: z_$(TILENAME)_%.zip
 #
 
 ortho4xp.diff:
-	@echo [$@]
+	@echo "[$@]"
 	cd Ortho4XP && git diff > ../ortho4xp.diff
 
 Ortho4XP:
-	@echo [$@]
+	@echo "[$@]"
 	git clone --depth=1 https://github.com/oscarpilote/Ortho4XP.git
 	cd $@ && patch -p1 -u < ../ortho4xp.diff
 	cp extract_overlay.py $@/.
@@ -79,34 +78,40 @@ Ortho4XP:
 # generates the targets var/run/neighboursOfTile_%.elevation with surrounding tiles' elevations 
 # as prerequisites (takes a little while, 360*180 rules):
 var/run/Makefile.elevationRules: | $$(@D)/
-	@echo [$@]
+	@echo "[$@]"
 	@bin/genMakefileElevationRules > $@
 include var/run/Makefile.elevationRules
 
 var/run/tile_%.elevation: var/cache/elevation/elevation_%.zip Ortho4XP | $$(@D)/
-	@# unzip if file not empty, but fail on unzip error
+	@# Unzips if file not empty, but fails on unzip error.
+	@# Ignores the .zip if empty
 	@if [ -s "var/cache/elevation/elevation_$*.zip" ]; then \
-		printf "[$@] custom elevation found: "; \
+		printf "[$@] unzipping custom elevation: "; \
 		unzip -o -d Ortho4XP/Elevation_data/ var/cache/elevation/elevation_$*.zip | tr "\n" " | "; \
 		echo; \
 	else \
-		echo "[$@] no custom elevation"; \
+		echo "[$@] no custom elevation for this tile"; \
 	fi
 	@touch $@
 
 var/run/elevationRelease.json: | $$(@D)/
-	@echo [$@]
-	@gh api $(ELEV_RELEASE_JSON_ENDPOINT) --paginate > $@
+	@echo "[$@]"
+	@json=$$(gh api $(ELEV_RELEASE_JSON_ENDPOINT) --paginate) \
+		&& echo "$$json" > $@ \
+		&& printf "[$@] got %s\n" "$$(jq -r '.assets[].name' $@ | tr --delete "elevation_" | tr --delete ".zip" | tr "\n" ",")"
 
 var/cache/elevation/elevation_%.zip: var/run/elevationRelease.json | $$(@D)/
+	@# Fails if we expect a file but download failed. 
+	@# Creates an empty .zip file if there is no custom elevation.
 	@url=$$(jq -r '.assets[] | select$(OP).name == "elevation_$*.zip"$(CP) .browser_download_url' \
-			var/run/elevationRelease.json) \
-		&& [ -n "$$url" ] \
-		&& ( echo "[$@] downloading $$url" && cd $(@D) && wget --continue --quiet "$$url" ) \
-		&& echo "[$@] using custom elevation" \
-		|| ( echo "[$@] no custom elevation found"; true )
-	@# always create the .zip file
-	@touch $@
+			var/run/elevationRelease.json); \
+		if [ -n "$$url" ]; then \
+			echo "[$@] downloading custom elevation"; \
+			wget --continue --quiet -O $@ "$$url" && touch $@; \
+		else \
+			echo "[$@] no custom elevation for this tile"; \
+			touch $@; \
+		fi
 
 #
 # Split tile list
@@ -114,7 +119,7 @@ var/cache/elevation/elevation_%.zip: var/run/elevationRelease.json | $$(@D)/
 
 #$(TILENAME)_tile_list.%: $(TILENAME)_tile_list_chunks
 $(TILENAME)_tile_list_chunks: $(TILENAME)_tile_list
-	@echo [$@]
+	@echo "[$@]"
 	split $< -d -l $(SPLITSIZE) $<.
 	
 
@@ -131,11 +136,11 @@ Ortho4XP/Tiles/*/*/*/%.dsf: Ortho4XP var/run/neighboursOfTile_%.elevation
 	@echo [$@]
 	@echo "Make tile $*"
 	@echo "Setup per tile config, if possible"
-	mkdir -p Ortho4XP/Tiles/zOrtho4XP_$*
-	-cp Ortho4XP_$*.cfg Ortho4XP/Tiles/zOrtho4XP_$*/. 2>/dev/null
+	@mkdir -p Ortho4XP/Tiles/zOrtho4XP_$*
+	@cp Ortho4XP_$*.cfg Ortho4XP/Tiles/zOrtho4XP_$*/. 2>/dev/null || true
 	@echo "Make tile $(@)"
 	# this silences deprecation warnings in Ortho4XP for more concise output
-	set -e;\
+	@set -e;\
 	export COORDS=$$(echo $(@) | sed -e 's/.*\/\([-+][0-9]\+\)\([-+][0-9]\+\).dsf/\1 \2/g');\
 	echo $$COORDS; \
 	cd Ortho4XP \
@@ -150,15 +155,15 @@ Ortho4XP/Tiles/*/*/*/%.dsf: Ortho4XP var/run/neighboursOfTile_%.elevation
 
 # Static pattern rule for the zip files
 $(ZIPS): z_%.zip: z_%
-	@echo [$@]
-	mkdir -p $<
-	cp -r Ortho4XP/Tiles/zOrtho4XP_*/'Earth nav data' $</.
-	cp -r Ortho4XP/Tiles/zOrtho4XP_*/terrain $</.
-	cp -r Ortho4XP/Tiles/zOrtho4XP_*/textures $</.
-	zip -r $@ $<
+	@echo "[$@]"
+	@mkdir -p $<
+	@cp -r Ortho4XP/Tiles/zOrtho4XP_*/'Earth nav data' $</.
+	@cp -r Ortho4XP/Tiles/zOrtho4XP_*/terrain $</.
+	@cp -r Ortho4XP/Tiles/zOrtho4XP_*/textures $</.
+	@zip -r $@ $<
 	
 %.sha256: %		
-	@echo [$@]
+	@echo "[$@]"
 	sha256sum $< > $@
 
 clean:

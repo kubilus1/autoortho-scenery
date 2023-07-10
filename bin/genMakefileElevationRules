@@ -18,6 +18,8 @@ for lat in $(seq -90 90); do
 				printf "var/run/tile_%+03d%+04d.elevation " "$_lat" "$_lon"
 			done
 		done
-		printf '|$(@D)'"\n"
+		echo '|$(@D)'
+		echo '	@echo "[$@]"'
+		echo '	@touch $@'
 	done
 done
