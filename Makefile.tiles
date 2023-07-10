@@ -84,10 +84,13 @@ var/run/Makefile.elevationRules: | $$(@D)/
 include var/run/Makefile.elevationRules
 
 var/run/tile_%.elevation: var/cache/elevation/elevation_%.zip Ortho4XP | $$(@D)/
-	@echo [$@]
 	@# unzip if file not empty, but fail on unzip error
 	@if [ -s "var/cache/elevation/elevation_$*.zip" ]; then \
-		unzip -o -d Ortho4XP/Elevation_data/ var/cache/elevation/elevation_$*.zip; \
+		printf "[$@] custom elevation found: "; \
+		unzip -o -d Ortho4XP/Elevation_data/ var/cache/elevation/elevation_$*.zip | tr "\n" " | "; \
+		echo; \
+	else \
+		echo "[$@] no custom elevation"; \
 	fi
 	@touch $@
 
@@ -96,14 +99,13 @@ var/run/elevationRelease.json: | $$(@D)/
 	@gh api $(ELEV_RELEASE_JSON_ENDPOINT) --paginate > $@
 
 var/cache/elevation/elevation_%.zip: var/run/elevationRelease.json | $$(@D)/
-	@echo [$@]
 	@url=$$(jq -r '.assets[] | select$(OP).name == "elevation_$*.zip"$(CP) .browser_download_url' \
 			var/run/elevationRelease.json) \
 		&& [ -n "$$url" ] \
-		&& ( cd $(@D) && wget --continue --quiet "$$url" ) \
-		&& echo "[$@] downloaded $$url" \
-		|| ( echo "[$@] no custom elevation data for $* found"; true )
-	@# always create the file
+		&& ( echo "[$@] downloading $$url" && cd $(@D) && wget --continue --quiet "$$url" ) \
+		&& echo "[$@] using custom elevation" \
+		|| ( echo "[$@] no custom elevation found"; true )
+	@# always create the .zip file
 	@touch $@
 
 #
@@ -131,12 +133,18 @@ Ortho4XP/Tiles/*/*/*/%.dsf: Ortho4XP var/run/neighboursOfTile_%.elevation
 	@echo "Setup per tile config, if possible"
 	mkdir -p Ortho4XP/Tiles/zOrtho4XP_$*
 	-cp Ortho4XP_$*.cfg Ortho4XP/Tiles/zOrtho4XP_$*/. 2>/dev/null
-	@echo "Make tile $(@)" 
+	@echo "Make tile $(@)"
+	# this silences deprecation warnings in Ortho4XP for more concise output
 	set -e;\
 	export COORDS=$$(echo $(@) | sed -e 's/.*\/\([-+][0-9]\+\)\([-+][0-9]\+\).dsf/\1 \2/g');\
 	echo $$COORDS; \
-	cd Ortho4XP && python3 Ortho4XP_v130.py $$COORDS BI $(ZL) || ( echo "ERROR DETECTED! Retry tile $@ with noroads config."; cp $(CURDIR)/Ortho4XP_noroads.cfg $(CURDIR)/Ortho4XP/Tiles/zOrtho4XP_$*/Ortho4XP_$*.cfg && python3 Ortho4XP_v130.py $$COORDS BI $(ZL) )
-	#touch $@
+	cd Ortho4XP \
+		&& python3 Ortho4XP_v130.py $$COORDS BI $(ZL) 2>&1 | grep -v 'is deprecated' \
+		|| ( \
+			echo "ERROR DETECTED! Retry tile $@ with noroads config."; \
+			cp $(CURDIR)/Ortho4XP_noroads.cfg $(CURDIR)/Ortho4XP/Tiles/zOrtho4XP_$*/Ortho4XP_$*.cfg \
+			&& python3 Ortho4XP_v130.py $$COORDS BI $(ZL) 2>&1 | grep -v 'is deprecated' \
+		)
 
 .SECONDARY: $(TILE_FILES) 
 
