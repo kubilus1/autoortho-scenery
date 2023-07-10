@@ -95,7 +95,7 @@ var/run/tile_%.elevation: var/cache/elevation/elevation_%.zip Ortho4XP | $$(@D)/
 
 var/run/elevationRelease.json: | $$(@D)/
 	@echo "[$@]"
-	@json=$$(gh api $(ELEV_RELEASE_JSON_ENDPOINT) --paginate) \
+	@json="$$(gh api $(ELEV_RELEASE_JSON_ENDPOINT) --paginate)" \
 		&& echo "$$json" > $@ \
 		&& printf "[$@] got %s\n" "$$(jq -r '.assets[].name' $@ | tr --delete "elevation_" | tr --delete ".zip" | tr "\n" ",")"
 

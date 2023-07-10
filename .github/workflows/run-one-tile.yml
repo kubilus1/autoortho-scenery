@@ -30,7 +30,7 @@ jobs:
       - name: Build
         id: build
         run: |
-          timeout 20m make -f Makefile.tiles zOrtho4XP_${{ inputs.tile }}.zip -j $(nproc)
+          timeout 20m make -f Makefile.tiles zOrtho4XP_${{ inputs.tile }}.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
