@@ -162,15 +162,16 @@ $(ZIPS): z_%.zip: z_%
 	sha256sum $< > $@
 
 clean:
-	@echo [$@]
-	-rm -rf Ortho4XP
+	@echo "[$@]"
+	-rm -rf Ortho4XP/Tiles/*
 	-rm -rf var/run
 	-rm -f $(ZIPS)
 	-rm -rf z_$(TILENAME)*
 	-rm -f $(TILENAME)_tile_list.*
 
 distclean: clean
-	@echo [$@]
+	@echo "[$@]"
+	-rm -rf Ortho4XP
 	-rm -rf var
 	-rm -f z_*
 	-rm -f *_tile_list.*
