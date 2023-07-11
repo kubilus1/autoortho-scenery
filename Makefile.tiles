@@ -128,15 +128,14 @@ $(TILENAME)_tile_list_chunks: $(TILENAME)_tile_list
 
 Ortho4XP/Tiles/*/*/*/%.dsf: Ortho4XP var/run/neighboursOfTile_%.elevation
 	@echo [$@]
-	@echo "Make tile $*"
-	@echo "Setup per tile config, if possible"
 	@mkdir -p Ortho4XP/Tiles/zOrtho4XP_$*
+	@echo "Setup per tile config, if possible"
 	@cp Ortho4XP_$*.cfg Ortho4XP/Tiles/zOrtho4XP_$*/. 2>/dev/null || true
-	@echo "Make tile $(@)"
+	@echo "Available elevation data"
+	ls Ortho4XP/Elevation_data/ -lsh
 	# this silences deprecation warnings in Ortho4XP for more concise output
 	@set -e;\
 	export COORDS=$$(echo $(@) | sed -e 's/.*\/\([-+][0-9]\+\)\([-+][0-9]\+\).dsf/\1 \2/g');\
-	echo $$COORDS; \
 	cd Ortho4XP \
 		&& python3 Ortho4XP_v130.py $$COORDS BI $(ZL) 2>&1 | grep -v 'is deprecated' \
 		|| ( \
