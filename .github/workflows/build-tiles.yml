@@ -45,9 +45,6 @@ jobs:
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
           TILENAME=${{ inputs.setname }} make -n -f Makefile.tiles ${{ inputs.zip }}
 
-      - name: Setup Ortho4XP
-        run: make Ortho4XP
-
       - name: Build
         id: build
         run: |
