@@ -66,9 +66,9 @@ Ortho4XP:
 	cd $@ && patch -p1 -u < ../ortho4xp.diff
 	cp extract_overlay.py $@/.
 	cp Ortho4XP.cfg $@/.
-	mkdir $@/tmp
+	@mkdir $@/tmp
 	@echo "Setting up symlinks in order to not care about Ortho4XP's expected directory structure in ./Elevation_data..."
-	mkdir -p $@/Elevation_data && cd $@/Elevation_data \
+	@mkdir -p $@/Elevation_data && cd $@/Elevation_data \
 		&& bash -c 'for lat in {-9..9}; do for lon in {-18..18}; do ln -snfr ./ "./$$(printf "%+d0%+03d0" "$$lat" "$$lon")"; done; done'
 
 #
@@ -131,8 +131,12 @@ Ortho4XP/Tiles/*/*/*/%.dsf: Ortho4XP var/run/neighboursOfTile_%.elevation
 	@mkdir -p Ortho4XP/Tiles/zOrtho4XP_$*
 	@echo "Setup per tile config, if possible"
 	@cp Ortho4XP_$*.cfg Ortho4XP/Tiles/zOrtho4XP_$*/. 2>/dev/null || true
-	@echo "Available elevation data"
-	ls Ortho4XP/Elevation_data/ -lsh
+	@echo "Available elevation data for this tile before Ortho4XP run (25M is HD 1\", 2.8M is 3\"):"
+	@#ls Ortho4XP/Elevation_data/ -sh
+	@hgtLat="$$(grep -Eo '^.{3}' <<< $* | tr "+" "N" | tr "-" "S")" \
+		&& hgtLon="$$(grep -Eo '.{4}$$' <<< $* | tr "+" "E" | tr "-" "W")" \
+		&& hgtFilePath=Ortho4XP/Elevation_data/"$$hgtLat$$hgtLon".hgt \
+		&& ( [ -e "$$hgtFilePath" ] && ls -sh "$$hgtFilePath" || true )
 	# this silences deprecation warnings in Ortho4XP for more concise output
 	@set -e;\
 	export COORDS=$$(echo $(@) | sed -e 's/.*\/\([-+][0-9]\+\)\([-+][0-9]\+\).dsf/\1 \2/g');\
