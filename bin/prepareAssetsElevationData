@@ -1,0 +1,30 @@
+#!/bin/bash
+# saner programming env: these switches turn some bugs into errors
+set -o errexit -o pipefail -o noclobber -o nounset
+
+zipsDir="${1:-}"
+dir="$(dirname "$0")"
+targetDir="$(readlink -f "$dir/../var/cache/elevation")"
+
+if ! [ -d "$zipsDir" ]; then
+	cat <<-EOL
+		Usage: $0 <directory with single .zips from sonny.4lima.de>
+		
+		The source .zips will be copied to
+		‹$targetDir›
+		and renamed to tile name format for being uploaded to a release.
+
+		Example with the Github CLI: 
+		‹for i in var/cache/elevation/*; do gh release upload elevation-v0.0.1 \$i; done›
+	EOL
+	exit 1
+fi
+
+mkdir -p "$targetDir"
+
+for filePath in "$zipsDir"/*.zip; do
+	fileNameElevationFormat="$(basename "$filePath")"
+	fileNameTile="elevation_$(sed -E -e 's/N|E/+/g' -e 's/S|W/-/g' <<< "$fileNameElevationFormat")"
+	printf "%s\n  → %s\n" "$fileNameElevationFormat" "$fileNameTile"
+	cp "$filePath" "$targetDir/$fileNameTile"
+done
