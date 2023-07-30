@@ -1,4 +1,4 @@
-name: Main
+name: Build tileset (and upload)
 
 on: 
   workflow_dispatch:
@@ -24,6 +24,10 @@ on:
 jobs:
   ziplist:
     runs-on: ubuntu-22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: America/NewYork
+      GH_TOKEN: ${{ github.token }}
     outputs:
       chunks: ${{ steps.chunks.outputs.chunks }}
     steps:
@@ -44,6 +48,8 @@ jobs:
 
     strategy:
       matrix: ${{ fromJSON(needs.ziplist.outputs.chunks) }}
+      # might still need several restarts of failed jobs, but prevents us from losing successful work
+      fail-fast: false
 
     uses: ./.github/workflows/build-tiles.yml
     with:
@@ -59,6 +65,10 @@ jobs:
     environment: release
 
     runs-on: ubuntu-22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: America/NewYork
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3

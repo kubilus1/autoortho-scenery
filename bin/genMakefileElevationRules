@@ -1,0 +1,25 @@
+#!/bin/bash
+# Outputs Makefile rules for elevations.
+# Ortho4XP uses all surrounding tiles' elevations for generation of a tile.
+# The generated rules look like this:
+# var/run/neighboursOfTile_+12+123.elevation: var/run/tile_+12+123.elevation ... |$(@D)
+
+# saner programming env: these switches turn some bugs into errors
+set -o errexit -o pipefail -o noclobber -o nounset
+
+for lat in $(seq -90 90); do
+	for lon in $(seq -180 179); do
+		printf "var/run/neighboursOfTile_%+03d%+04d.elevation:" "$lat" "$lon"
+		for dLon in -1 0 1; do
+			for dLat in -1 0 1; do
+				_lat="$((lat + dLat))"
+				# wrap around although not needed in 100 years. Elevation data for the Aleutians anybody?
+				_lon="$(( ($lon + $dLon + 540) % 360 - 180))"
+				printf "var/run/tile_%+03d%+04d.elevation " "$_lat" "$_lon"
+			done
+		done
+		echo '|$(@D)'
+		echo '	@echo "[$@]"'
+		echo '	@touch $@'
+	done
+done

@@ -1,4 +1,4 @@
-name: Test
+name: Build one .zip (and upload) (sub-workflow)
 
 on:
   workflow_call:
@@ -22,6 +22,7 @@ jobs:
     env:
       DEBIAN_FRONTEND: noninteractive
       TZ: America/NewYork
+      GH_TOKEN: ${{ github.token }}
 
     runs-on: ubuntu-22.04
 
@@ -44,19 +45,16 @@ jobs:
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
           TILENAME=${{ inputs.setname }} make -n -f Makefile.tiles ${{ inputs.zip }}
 
-      - name: Setup Ortho4XP
-        run: make Ortho4XP
-
       - name: Build
         id: build
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
-          TILENAME=${{ inputs.setname }} timeout 300m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.setname }} timeout 300m make -f Makefile.tiles ${{ inputs.zip }}.info && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           
       - name: Show work
         if: steps.build.outputs.done == 'true'
         run: |
-          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
@@ -91,6 +89,10 @@ jobs:
     if: needs.build.outputs.done == 'false'
     needs: build
     runs-on: ubuntu-22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: America/NewYork
+      GH_TOKEN: ${{ github.token }}
     
     outputs:
       done: ${{ steps.rebuild.outputs.done }}
@@ -120,12 +122,12 @@ jobs:
         id: rebuild
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
-          TILENAME=${{ inputs.setname }} timeout 300m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.setname }} timeout 300m make -f Makefile.tiles ${{ inputs.zip }}.info && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           
       - name: Show work
         if: steps.rebuild.outputs.done == 'true'
         run: |
-          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY
@@ -160,6 +162,10 @@ jobs:
     if: needs.rebuild.outputs.done == 'false'
     needs: rerun
     runs-on: ubuntu-22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: America/NewYork
+      GH_TOKEN: ${{ github.token }}
     
     outputs:
       done: ${{ steps.rebuild.outputs.done }}
@@ -189,12 +195,12 @@ jobs:
         id: rebuild
         run: |
           TILENAME=${{ inputs.setname }} make -f Makefile.tiles ${{ inputs.setname }}_tile_list_chunks
-          TILENAME=${{ inputs.setname }} timeout 300m make -f Makefile.tiles ${{ inputs.zip }} && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.setname }} timeout 300m make -f Makefile.tiles ${{ inputs.zip }}.info && echo "done=true" >> "$GITHUB_OUTPUT" || echo "done=false" >> "$GITHUB_OUTPUT"
+          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           
       - name: Show work
         if: steps.rebuild.outputs.done == 'true'
         run: |
-          TILENAME=${{ inputs.tileset }} make -f Makefile.tiles ${{ inputs.zip }}.sha256
           echo '### ${{ inputs.tileset }} : ${{ inputs.zip }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           #unzip -l ${{ inputs.zip }} *.dsf >> $GITHUB_STEP_SUMMARY

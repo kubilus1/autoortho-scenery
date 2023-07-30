@@ -1,4 +1,4 @@
-name: Run one
+name: Build one .zip (and upload)
 
 on:
   workflow_dispatch:

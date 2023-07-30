@@ -1,0 +1,41 @@
+name: Build one tile (and create artifact)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tile:
+        type: string
+        default: '+62-008'
+
+jobs:
+  build:
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: America/NewYork
+      GH_TOKEN: ${{ github.token }}
+
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install reqs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip python3-tk zip libgeos-dev
+          python3 -m pip install -r requirements.txt
+          make --version
+
+      - name: Build
+        id: build
+        run: |
+          timeout 20m make -f Makefile.tiles z_aosingle_${{ inputs.tile }}.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: z_aosingle_${{ inputs.tile }}.zip
+          path: ./z_aosingle_${{ inputs.tile }}.zip
+          retention-days: 2
+
